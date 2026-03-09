@@ -32,17 +32,6 @@ from backend.redaction import redact_pii
 load_dotenv()
 
 # Force reload of scoring engine to ensure updated signature is used
-# --- WAR Pinecone Deprecated Plugin Streamlit Cache Issue ---
-try:
-    import builtins
-    import subprocess
-    import sys
-    # Try to see if the offending plugin is installed
-    subprocess.run([sys.executable, "-m", "pip", "uninstall", "-y", "pinecone-plugin-inference"], 
-                   stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-except Exception:
-    pass
-# ------------------------------------------------------------
 
 import backend.scoring_engine
 importlib.reload(backend.scoring_engine)
