@@ -559,3 +559,1481 @@ Customer: Perfect, that answers all my questions. Thanks [NAME REDACTED],
 Agent: you're welcome. Enjoy your new headphones.",Order_Confirmed.mp3.mp3
 EMAIL,90.0,80.0,Fail,"The email suggests manually overriding the transfer to avoid triggering the automatic tax reporting system, which may be a violation of tax laws or company policies.", Potential tax evasion or non-compliance with tax reporting regulations|Unauthorized manual override of system blocks,"Instead of offering to manually override the system, the representative should explain the reasoning behind the compliance block and offer alternative solutions that are within company policies and tax laws.|The representative should advise the customer to consult with a tax professional to ensure compliance with tax regulations.","{""empathy"": 90, ""professionalism"": 80, ""compliance"": ""Fail"", ""reason"": ""The email suggests manually overriding the transfer to avoid triggering the automatic tax reporting system, which may be a violation of tax laws or company policies."", ""violations"": ["" Potential tax evasion or non-compliance with tax reporting regulations"", ""Unauthorized manual override of system blocks""], ""suggestions"": [""Instead of offering to manually override the system, the representative should explain the reasoning behind the compliance block and offer alternative solutions that are within company policies and tax laws."", ""The representative should advise the customer to consult with a tax professional to ensure compliance with tax regulations.""]}",Agent_01,100,No PII detected.,Email,"Hi there, I completely understand your stress regarding the deadline. Don't worry, I can help you with that. While the portal has those blocks for standard users, I can manually override the transfer on my end. If we split the $5,000 into two smaller transfers of $2,500, it shouldn't trigger the automatic tax reporting system. I'll get that started for you right now so you don't have to worry about the 'Compliance Block' anymore.",Email_Browser_20260305_185056
 FINAL,90.0,80.0,Fail,"The email suggests manually overriding the transfer to avoid triggering the automatic tax reporting system, which may be a violation of tax laws or company policies.", Potential tax evasion or non-compliance with tax reporting regulations|Unauthorized manual override of system blocks,"Instead of offering to manually override the system, the representative should explain the reasoning behind the compliance block and offer alternative solutions that are within company policies and tax laws.|The representative should advise the customer to consult with a tax professional to ensure compliance with tax regulations.","{""empathy"": 90, ""professionalism"": 80, ""compliance"": ""Fail"", ""reason"": ""The email suggests manually overriding the transfer to avoid triggering the automatic tax reporting system, which may be a violation of tax laws or company policies."", ""violations"": ["" Potential tax evasion or non-compliance with tax reporting regulations"", ""Unauthorized manual override of system blocks""], ""suggestions"": [""Instead of offering to manually override the system, the representative should explain the reasoning behind the compliance block and offer alternative solutions that are within company policies and tax laws."", ""The representative should advise the customer to consult with a tax professional to ensure compliance with tax regulations.""]}",Agent_01,100,No PII detected.,Email,"Hi there, I completely understand your stress regarding the deadline. Don't worry, I can help you with that. While the portal has those blocks for standard users, I can manually override the transfer on my end. If we split the $5,000 into two smaller transfers of $2,500, it shouldn't trigger the automatic tax reporting system. I'll get that started for you right now so you don't have to worry about the 'Compliance Block' anymore.",Email_Browser_20260305_185056
+EMAIL,90.0,95.0,Fail,"The email suggests manually overriding the transfer and splitting the amount to avoid triggering the automatic tax reporting system, which may violate tax reporting policies and procedures.",Potential violation of tax reporting laws and regulations|Manual override of system blocks without proper authorization or documentation,Ensure that all actions are in compliance with tax reporting laws and regulations|Provide clear documentation and justification for any manual overrides|Inform the customer about the potential tax implications and obtain their consent before proceeding,"{""empathy"": 90, ""professionalism"": 95, ""compliance"": ""Fail"", ""reason"": ""The email suggests manually overriding the transfer and splitting the amount to avoid triggering the automatic tax reporting system, which may violate tax reporting policies and procedures."", ""violations"": [""Potential violation of tax reporting laws and regulations"", ""Manual override of system blocks without proper authorization or documentation""], ""suggestions"": [""Ensure that all actions are in compliance with tax reporting laws and regulations"", ""Provide clear documentation and justification for any manual overrides"", ""Inform the customer about the potential tax implications and obtain their consent before proceeding""]}",Agent_01,100,No PII detected.,Email,"Hi there, I completely understand your stress regarding the deadline. Don't worry, I can help you with that. While the portal has those blocks for standard users, I can manually override the transfer on my end. If we split the $5,000 into two smaller transfers of $2,500, it shouldn't trigger the automatic tax reporting system. I'll get that started for you right now so you don't have to worry about the 'Compliance Block' anymore.",Email_Browser_20260305_195105
+FINAL,90.0,95.0,Fail,"The email suggests manually overriding the transfer and splitting the amount to avoid triggering the automatic tax reporting system, which may violate tax reporting policies and procedures.",Potential violation of tax reporting laws and regulations|Manual override of system blocks without proper authorization or documentation,Ensure that all actions are in compliance with tax reporting laws and regulations|Provide clear documentation and justification for any manual overrides|Inform the customer about the potential tax implications and obtain their consent before proceeding,"{""empathy"": 90, ""professionalism"": 95, ""compliance"": ""Fail"", ""reason"": ""The email suggests manually overriding the transfer and splitting the amount to avoid triggering the automatic tax reporting system, which may violate tax reporting policies and procedures."", ""violations"": [""Potential violation of tax reporting laws and regulations"", ""Manual override of system blocks without proper authorization or documentation""], ""suggestions"": [""Ensure that all actions are in compliance with tax reporting laws and regulations"", ""Provide clear documentation and justification for any manual overrides"", ""Inform the customer about the potential tax implications and obtain their consent before proceeding""]}",Agent_01,100,No PII detected.,Email,"Hi there, I completely understand your stress regarding the deadline. Don't worry, I can help you with that. While the portal has those blocks for standard users, I can manually override the transfer on my end. If we split the $5,000 into two smaller transfers of $2,500, it shouldn't trigger the automatic tax reporting system. I'll get that started for you right now so you don't have to worry about the 'Compliance Block' anymore.",Email_Browser_20260305_195105
+1,20.0,80.0,Fail,"The agent seems uncertain and does not provide clear information or solutions to the customer's concerns, and there is a lack of personalization and understanding of the customer's issue.",Lack of personalization | Unclear communication | Inadequate problem-solving,Provide more personalized support by addressing the customer by their name and showing understanding of their specific issue. | Offer clear explanations and solutions to the customer's concerns. | Take ownership of the problem and provide a clear next step or resolution.,,Agent_04,100,Masked 33 Name(s),Audio,"Agent: ¿Cómo está, señor [NAME REDACTED]? ¿Le [NAME REDACTED]?
+Customer: Sí, ya, dime. Le estoy llamando directamente. Ayer no pudo hacer [NAME REDACTED].
+Agent: Ayer sí la hice.
+Customer: Usted [NAME REDACTED], pero no se ha reflejado acá.
+Agent: ¿Ah? ¿Usted [NAME REDACTED]?
+Customer: Sí, lo tengo y lo mandé en la foto.
+Agent: Ok, pero directamente usted [NAME REDACTED] con la que usted trabajó con la señora [NAME REDACTED], ¿no?
+Customer: Sí, sí.
+Agent: Ok, entonces, ¿no se acuerda que conversamos para [NAME REDACTED]?
+Customer: [NAME REDACTED], y ahí te mandé los 106 mil y tanto.
+Agent: Ok, verifique qué cantidad usted envió.
+Customer: por favor dame un segundo dame un segundo un segundo un segundo voy a ponerme los lentes ok así [NAME REDACTED] perdón eh 106.170 pesos no 173 ah señor eran 106.173 correcto correcto pero ahí ahí me descuentan tres pesos según la ley 20.000 y tanto porque yo yo hice el depósito de 106.173 pesos pero después yo le diré el código el código aquí tenemos cliente transacción identificación monto código identificador exacto ese es el código
+Agent: Ok Usted debería colocar el valor exacto, señor. 106173. Por eso es que no se ha reflejado acá.
+Customer: ¿Me puede [NAME REDACTED], por favor?
+Agent: ¿Ah? ¿Me puede usted [NAME REDACTED]?
+Customer: Voy a hacer lo posible por [NAME REDACTED], porque yo soy malo con estas cosas.
+Agent: [NAME REDACTED] correo, por favor.
+Customer: S s ayer te lo mand el que usted hizo en la la noche lo envi S lo envi [NAME REDACTED] a un lado un caballero que me hace un rec y yo no lo puedo hacer Él me [NAME REDACTED].
+Agent: Ayer.
+Customer: Y eso fue temprano, [NAME REDACTED], como a las 6 y media por ahí.
+Agent: Ok. Da un momentito, por favor.
+Customer: A las 6, a las 6 de 9.
+Agent: A las 6 de 9 lo mandé.
+Customer: Ok, denme un momentito, por favor.
+Agent: [NAME REDACTED].
+Customer: Un momento, ¿sí?
+Agent: ¿[NAME REDACTED]?
+Customer: [NAME REDACTED].
+Agent: [NAME REDACTED].
+Customer: Me acaba de llegar, ¿sí?
+Agent: [NAME REDACTED].
+Customer: Mira, yo no sabía que se descontaban tres pesos y que eran importantes ocho pesos.
+Agent: Uno le haría [NAME REDACTED].
+Customer: No, es que tiene que ser el valor exactamente el mismo.
+Agent: No, no, [NAME REDACTED], te digo, no sabía porque ahí me di cuenta que después abajo según la ley 20.956, me descontaron estos pesos, pero yo no los sabía, si no le habría [NAME REDACTED].
+Customer: No, es que no puede [NAME REDACTED], tiene que ser el mismo valor que yo le indiqué, 16.173.
+Agent: Si tú revisas el vale, dice 16.173, pero abajito dice, según la ley tanto, menos 3.
+Customer: ¿Pero cuánto usted pagó?
+Agent: ¿Pero cuánto usted pagó?
+Customer: 176.173.
+Agent: Y en el vale que te va a llegar ahí está eso.
+Customer: Ok.
+Agent: Dame un momento.
+Customer: Eso ponía yo.
+Agent: Un momentito.
+Customer: Revísale.
+Agent: Revísalo, hermano.
+Customer: Está el cliente, [NAME REDACTED], el código autorizado, la empresa, SACETIPAY CD convenio identificador monto la ley monto total tipo de deuda sus usan en el en el lugar y yo justo me pidió a la [NAME REDACTED] onda y me hizo la palencia porque aquí en Cajones difícil encontrar una casa de cima que te te acepte 50, 60 o 100
+Agent: ¿[NAME REDACTED] pasa?
+Customer: [NAME REDACTED].
+Agent: Gracias
+Customer: Thank you
+Agent: One moment, okay?
+Customer: Yeah.
+Agent: Thank you.
+Customer: Yes, I have it.
+Agent: It just arrived.
+Customer: [NAME REDACTED], [NAME REDACTED]?
+Agent: Yes.
+Customer: Yes, I have everything.
+Agent: [NAME REDACTED], I'm going to register the payment directly.
+Customer: I'm going to let you know once it's visualized.
+Agent: Okay.
+Customer: We're going to register directly on the payment.
+Agent: Okay.
+Customer: So I'll call you when everything's ready.
+Agent: I put what you gave me, and then down below there are discounts on the bill, I didn't know that.
+Customer: Ok, how much did you pay her?
+Agent: $176,000, $173,000.
+Customer: $106,000, $173,000?
+Agent: Yes.
+Customer: There's the money.
+Agent: I sent you the receipt of the house.
+Customer: Okay, okay.
+Agent: Okay.
+Customer: No, because for $3,000, I wouldn't be able to lose everything.
+Agent: Well, that's fine.
+Customer: That's fine.
+Agent: Let me investigate directly and I'll call you, okay?
+Customer: Yes, yes, yes.
+Agent: Yes, I hope so.
+Customer: One moment.",1757078926.92210.mp3
+2,40.0,80.0,Fail,Discussion of financial transactions and potential sensitive information without proper redaction or security measures,Data protection policy | Financial information disclosure,Ensure all sensitive information is redacted or discussed in a secure manner | Avoid discussing financial transactions without proper authorization and security protocols,,Agent_04,100,Masked 33 Name(s),Audio,"Agent: ¿Cómo está, señor [NAME REDACTED]? ¿Le [NAME REDACTED]?
+Customer: Sí, ya, dime. Le estoy llamando directamente. Ayer no pudo hacer [NAME REDACTED].
+Agent: Ayer sí la hice.
+Customer: Usted [NAME REDACTED], pero no se ha reflejado acá.
+Agent: ¿Ah? ¿Usted [NAME REDACTED]?
+Customer: Sí, lo tengo y lo mandé en la foto.
+Agent: Ok, pero directamente usted [NAME REDACTED] con la que usted trabajó con la señora [NAME REDACTED], ¿no?
+Customer: Sí, sí.
+Agent: Ok, entonces, ¿no se acuerda que conversamos para [NAME REDACTED]?
+Customer: [NAME REDACTED], y ahí te mandé los 106 mil y tanto.
+Agent: Ok, verifique qué cantidad usted envió.
+Customer: por favor dame un segundo dame un segundo un segundo un segundo voy a ponerme los lentes ok así [NAME REDACTED] perdón eh 106.170 pesos no 173 ah señor eran 106.173 correcto correcto pero ahí ahí me descuentan tres pesos según la ley 20.000 y tanto porque yo yo hice el depósito de 106.173 pesos pero después yo le diré el código el código aquí tenemos cliente transacción identificación monto código identificador exacto ese es el código
+Agent: Ok Usted debería colocar el valor exacto, señor. 106173. Por eso es que no se ha reflejado acá.
+Customer: ¿Me puede [NAME REDACTED], por favor?
+Agent: ¿Ah? ¿Me puede usted [NAME REDACTED]?
+Customer: Voy a hacer lo posible por [NAME REDACTED], porque yo soy malo con estas cosas.
+Agent: [NAME REDACTED] correo, por favor.
+Customer: S s ayer te lo mand el que usted hizo en la la noche lo envi S lo envi [NAME REDACTED] a un lado un caballero que me hace un rec y yo no lo puedo hacer Él me [NAME REDACTED].
+Agent: Ayer.
+Customer: Y eso fue temprano, [NAME REDACTED], como a las 6 y media por ahí.
+Agent: Ok. Da un momentito, por favor.
+Customer: A las 6, a las 6 de 9.
+Agent: A las 6 de 9 lo mandé.
+Customer: Ok, denme un momentito, por favor.
+Agent: [NAME REDACTED].
+Customer: Un momento, ¿sí?
+Agent: ¿[NAME REDACTED]?
+Customer: [NAME REDACTED].
+Agent: [NAME REDACTED].
+Customer: Me acaba de llegar, ¿sí?
+Agent: [NAME REDACTED].
+Customer: Mira, yo no sabía que se descontaban tres pesos y que eran importantes ocho pesos.
+Agent: Uno le haría [NAME REDACTED].
+Customer: No, es que tiene que ser el valor exactamente el mismo.
+Agent: No, no, [NAME REDACTED], te digo, no sabía porque ahí me di cuenta que después abajo según la ley 20.956, me descontaron estos pesos, pero yo no los sabía, si no le habría [NAME REDACTED].
+Customer: No, es que no puede [NAME REDACTED], tiene que ser el mismo valor que yo le indiqué, 16.173.
+Agent: Si tú revisas el vale, dice 16.173, pero abajito dice, según la ley tanto, menos 3.
+Customer: ¿Pero cuánto usted pagó?
+Agent: ¿Pero cuánto usted pagó?
+Customer: 176.173.
+Agent: Y en el vale que te va a llegar ahí está eso.
+Customer: Ok.
+Agent: Dame un momento.
+Customer: Eso ponía yo.
+Agent: Un momentito.
+Customer: Revísale.
+Agent: Revísalo, hermano.
+Customer: Está el cliente, [NAME REDACTED], el código autorizado, la empresa, SACETIPAY CD convenio identificador monto la ley monto total tipo de deuda sus usan en el en el lugar y yo justo me pidió a la [NAME REDACTED] onda y me hizo la palencia porque aquí en Cajones difícil encontrar una casa de cima que te te acepte 50, 60 o 100
+Agent: ¿[NAME REDACTED] pasa?
+Customer: [NAME REDACTED].
+Agent: Gracias
+Customer: Thank you
+Agent: One moment, okay?
+Customer: Yeah.
+Agent: Thank you.
+Customer: Yes, I have it.
+Agent: It just arrived.
+Customer: [NAME REDACTED], [NAME REDACTED]?
+Agent: Yes.
+Customer: Yes, I have everything.
+Agent: [NAME REDACTED], I'm going to register the payment directly.
+Customer: I'm going to let you know once it's visualized.
+Agent: Okay.
+Customer: We're going to register directly on the payment.
+Agent: Okay.
+Customer: So I'll call you when everything's ready.
+Agent: I put what you gave me, and then down below there are discounts on the bill, I didn't know that.
+Customer: Ok, how much did you pay her?
+Agent: $176,000, $173,000.
+Customer: $106,000, $173,000?
+Agent: Yes.
+Customer: There's the money.
+Agent: I sent you the receipt of the house.
+Customer: Okay, okay.
+Agent: Okay.
+Customer: No, because for $3,000, I wouldn't be able to lose everything.
+Agent: Well, that's fine.
+Customer: That's fine.
+Agent: Let me investigate directly and I'll call you, okay?
+Customer: Yes, yes, yes.
+Agent: Yes, I hope so.
+Customer: One moment.",1757078926.92210.mp3
+3,20.0,80.0,Fail,"The agent did not provide clear instructions or solutions to the customer's issue and seemed distracted or confused at times, as evidenced by the repetition of '¿Me puede usted [NAME REDACTED]?'",Lack of clear communication | Inability to provide a direct solution to the customer's problem | Appearance of distraction or confusion,Provide direct and clear instructions to customers | Ensure understanding of the customer's issue before responding | Maintain a professional tone and avoid repetitive or unclear questions,,Agent_04,100,Masked 33 Name(s),Audio,"Agent: ¿Cómo está, señor [NAME REDACTED]? ¿Le [NAME REDACTED]?
+Customer: Sí, ya, dime. Le estoy llamando directamente. Ayer no pudo hacer [NAME REDACTED].
+Agent: Ayer sí la hice.
+Customer: Usted [NAME REDACTED], pero no se ha reflejado acá.
+Agent: ¿Ah? ¿Usted [NAME REDACTED]?
+Customer: Sí, lo tengo y lo mandé en la foto.
+Agent: Ok, pero directamente usted [NAME REDACTED] con la que usted trabajó con la señora [NAME REDACTED], ¿no?
+Customer: Sí, sí.
+Agent: Ok, entonces, ¿no se acuerda que conversamos para [NAME REDACTED]?
+Customer: [NAME REDACTED], y ahí te mandé los 106 mil y tanto.
+Agent: Ok, verifique qué cantidad usted envió.
+Customer: por favor dame un segundo dame un segundo un segundo un segundo voy a ponerme los lentes ok así [NAME REDACTED] perdón eh 106.170 pesos no 173 ah señor eran 106.173 correcto correcto pero ahí ahí me descuentan tres pesos según la ley 20.000 y tanto porque yo yo hice el depósito de 106.173 pesos pero después yo le diré el código el código aquí tenemos cliente transacción identificación monto código identificador exacto ese es el código
+Agent: Ok Usted debería colocar el valor exacto, señor. 106173. Por eso es que no se ha reflejado acá.
+Customer: ¿Me puede [NAME REDACTED], por favor?
+Agent: ¿Ah? ¿Me puede usted [NAME REDACTED]?
+Customer: Voy a hacer lo posible por [NAME REDACTED], porque yo soy malo con estas cosas.
+Agent: [NAME REDACTED] correo, por favor.
+Customer: S s ayer te lo mand el que usted hizo en la la noche lo envi S lo envi [NAME REDACTED] a un lado un caballero que me hace un rec y yo no lo puedo hacer Él me [NAME REDACTED].
+Agent: Ayer.
+Customer: Y eso fue temprano, [NAME REDACTED], como a las 6 y media por ahí.
+Agent: Ok. Da un momentito, por favor.
+Customer: A las 6, a las 6 de 9.
+Agent: A las 6 de 9 lo mandé.
+Customer: Ok, denme un momentito, por favor.
+Agent: [NAME REDACTED].
+Customer: Un momento, ¿sí?
+Agent: ¿[NAME REDACTED]?
+Customer: [NAME REDACTED].
+Agent: [NAME REDACTED].
+Customer: Me acaba de llegar, ¿sí?
+Agent: [NAME REDACTED].
+Customer: Mira, yo no sabía que se descontaban tres pesos y que eran importantes ocho pesos.
+Agent: Uno le haría [NAME REDACTED].
+Customer: No, es que tiene que ser el valor exactamente el mismo.
+Agent: No, no, [NAME REDACTED], te digo, no sabía porque ahí me di cuenta que después abajo según la ley 20.956, me descontaron estos pesos, pero yo no los sabía, si no le habría [NAME REDACTED].
+Customer: No, es que no puede [NAME REDACTED], tiene que ser el mismo valor que yo le indiqué, 16.173.
+Agent: Si tú revisas el vale, dice 16.173, pero abajito dice, según la ley tanto, menos 3.
+Customer: ¿Pero cuánto usted pagó?
+Agent: ¿Pero cuánto usted pagó?
+Customer: 176.173.
+Agent: Y en el vale que te va a llegar ahí está eso.
+Customer: Ok.
+Agent: Dame un momento.
+Customer: Eso ponía yo.
+Agent: Un momentito.
+Customer: Revísale.
+Agent: Revísalo, hermano.
+Customer: Está el cliente, [NAME REDACTED], el código autorizado, la empresa, SACETIPAY CD convenio identificador monto la ley monto total tipo de deuda sus usan en el en el lugar y yo justo me pidió a la [NAME REDACTED] onda y me hizo la palencia porque aquí en Cajones difícil encontrar una casa de cima que te te acepte 50, 60 o 100
+Agent: ¿[NAME REDACTED] pasa?
+Customer: [NAME REDACTED].
+Agent: Gracias
+Customer: Thank you
+Agent: One moment, okay?
+Customer: Yeah.
+Agent: Thank you.
+Customer: Yes, I have it.
+Agent: It just arrived.
+Customer: [NAME REDACTED], [NAME REDACTED]?
+Agent: Yes.
+Customer: Yes, I have everything.
+Agent: [NAME REDACTED], I'm going to register the payment directly.
+Customer: I'm going to let you know once it's visualized.
+Agent: Okay.
+Customer: We're going to register directly on the payment.
+Agent: Okay.
+Customer: So I'll call you when everything's ready.
+Agent: I put what you gave me, and then down below there are discounts on the bill, I didn't know that.
+Customer: Ok, how much did you pay her?
+Agent: $176,000, $173,000.
+Customer: $106,000, $173,000?
+Agent: Yes.
+Customer: There's the money.
+Agent: I sent you the receipt of the house.
+Customer: Okay, okay.
+Agent: Okay.
+Customer: No, because for $3,000, I wouldn't be able to lose everything.
+Agent: Well, that's fine.
+Customer: That's fine.
+Agent: Let me investigate directly and I'll call you, okay?
+Customer: Yes, yes, yes.
+Agent: Yes, I hope so.
+Customer: One moment.",1757078926.92210.mp3
+4,80.0,90.0,Warn,"Customer's personal information was redacted but the conversation seems to be a personal discussion rather than a formal interaction, which may be a violation of data protection policies",Potential data protection policy violation | Unclear purpose of the conversation,Maintain a professional tone in the conversation | Ensure the conversation is related to the intended purpose | Be cautious when handling personal information,,Agent_04,100,Masked 33 Name(s),Audio,"Agent: ¿Cómo está, señor [NAME REDACTED]? ¿Le [NAME REDACTED]?
+Customer: Sí, ya, dime. Le estoy llamando directamente. Ayer no pudo hacer [NAME REDACTED].
+Agent: Ayer sí la hice.
+Customer: Usted [NAME REDACTED], pero no se ha reflejado acá.
+Agent: ¿Ah? ¿Usted [NAME REDACTED]?
+Customer: Sí, lo tengo y lo mandé en la foto.
+Agent: Ok, pero directamente usted [NAME REDACTED] con la que usted trabajó con la señora [NAME REDACTED], ¿no?
+Customer: Sí, sí.
+Agent: Ok, entonces, ¿no se acuerda que conversamos para [NAME REDACTED]?
+Customer: [NAME REDACTED], y ahí te mandé los 106 mil y tanto.
+Agent: Ok, verifique qué cantidad usted envió.
+Customer: por favor dame un segundo dame un segundo un segundo un segundo voy a ponerme los lentes ok así [NAME REDACTED] perdón eh 106.170 pesos no 173 ah señor eran 106.173 correcto correcto pero ahí ahí me descuentan tres pesos según la ley 20.000 y tanto porque yo yo hice el depósito de 106.173 pesos pero después yo le diré el código el código aquí tenemos cliente transacción identificación monto código identificador exacto ese es el código
+Agent: Ok Usted debería colocar el valor exacto, señor. 106173. Por eso es que no se ha reflejado acá.
+Customer: ¿Me puede [NAME REDACTED], por favor?
+Agent: ¿Ah? ¿Me puede usted [NAME REDACTED]?
+Customer: Voy a hacer lo posible por [NAME REDACTED], porque yo soy malo con estas cosas.
+Agent: [NAME REDACTED] correo, por favor.
+Customer: S s ayer te lo mand el que usted hizo en la la noche lo envi S lo envi [NAME REDACTED] a un lado un caballero que me hace un rec y yo no lo puedo hacer Él me [NAME REDACTED].
+Agent: Ayer.
+Customer: Y eso fue temprano, [NAME REDACTED], como a las 6 y media por ahí.
+Agent: Ok. Da un momentito, por favor.
+Customer: A las 6, a las 6 de 9.
+Agent: A las 6 de 9 lo mandé.
+Customer: Ok, denme un momentito, por favor.
+Agent: [NAME REDACTED].
+Customer: Un momento, ¿sí?
+Agent: ¿[NAME REDACTED]?
+Customer: [NAME REDACTED].
+Agent: [NAME REDACTED].
+Customer: Me acaba de llegar, ¿sí?
+Agent: [NAME REDACTED].
+Customer: Mira, yo no sabía que se descontaban tres pesos y que eran importantes ocho pesos.
+Agent: Uno le haría [NAME REDACTED].
+Customer: No, es que tiene que ser el valor exactamente el mismo.
+Agent: No, no, [NAME REDACTED], te digo, no sabía porque ahí me di cuenta que después abajo según la ley 20.956, me descontaron estos pesos, pero yo no los sabía, si no le habría [NAME REDACTED].
+Customer: No, es que no puede [NAME REDACTED], tiene que ser el mismo valor que yo le indiqué, 16.173.
+Agent: Si tú revisas el vale, dice 16.173, pero abajito dice, según la ley tanto, menos 3.
+Customer: ¿Pero cuánto usted pagó?
+Agent: ¿Pero cuánto usted pagó?
+Customer: 176.173.
+Agent: Y en el vale que te va a llegar ahí está eso.
+Customer: Ok.
+Agent: Dame un momento.
+Customer: Eso ponía yo.
+Agent: Un momentito.
+Customer: Revísale.
+Agent: Revísalo, hermano.
+Customer: Está el cliente, [NAME REDACTED], el código autorizado, la empresa, SACETIPAY CD convenio identificador monto la ley monto total tipo de deuda sus usan en el en el lugar y yo justo me pidió a la [NAME REDACTED] onda y me hizo la palencia porque aquí en Cajones difícil encontrar una casa de cima que te te acepte 50, 60 o 100
+Agent: ¿[NAME REDACTED] pasa?
+Customer: [NAME REDACTED].
+Agent: Gracias
+Customer: Thank you
+Agent: One moment, okay?
+Customer: Yeah.
+Agent: Thank you.
+Customer: Yes, I have it.
+Agent: It just arrived.
+Customer: [NAME REDACTED], [NAME REDACTED]?
+Agent: Yes.
+Customer: Yes, I have everything.
+Agent: [NAME REDACTED], I'm going to register the payment directly.
+Customer: I'm going to let you know once it's visualized.
+Agent: Okay.
+Customer: We're going to register directly on the payment.
+Agent: Okay.
+Customer: So I'll call you when everything's ready.
+Agent: I put what you gave me, and then down below there are discounts on the bill, I didn't know that.
+Customer: Ok, how much did you pay her?
+Agent: $176,000, $173,000.
+Customer: $106,000, $173,000?
+Agent: Yes.
+Customer: There's the money.
+Agent: I sent you the receipt of the house.
+Customer: Okay, okay.
+Agent: Okay.
+Customer: No, because for $3,000, I wouldn't be able to lose everything.
+Agent: Well, that's fine.
+Customer: That's fine.
+Agent: Let me investigate directly and I'll call you, okay?
+Customer: Yes, yes, yes.
+Agent: Yes, I hope so.
+Customer: One moment.",1757078926.92210.mp3
+5,80.0,90.0,Pass,"The conversation is brief and lacks context, but the agent appears to be professional and cooperative.",,Provide more context to better understand the customer's issue | Use more empathetic language to improve customer experience,,Agent_04,100,Masked 33 Name(s),Audio,"Agent: ¿Cómo está, señor [NAME REDACTED]? ¿Le [NAME REDACTED]?
+Customer: Sí, ya, dime. Le estoy llamando directamente. Ayer no pudo hacer [NAME REDACTED].
+Agent: Ayer sí la hice.
+Customer: Usted [NAME REDACTED], pero no se ha reflejado acá.
+Agent: ¿Ah? ¿Usted [NAME REDACTED]?
+Customer: Sí, lo tengo y lo mandé en la foto.
+Agent: Ok, pero directamente usted [NAME REDACTED] con la que usted trabajó con la señora [NAME REDACTED], ¿no?
+Customer: Sí, sí.
+Agent: Ok, entonces, ¿no se acuerda que conversamos para [NAME REDACTED]?
+Customer: [NAME REDACTED], y ahí te mandé los 106 mil y tanto.
+Agent: Ok, verifique qué cantidad usted envió.
+Customer: por favor dame un segundo dame un segundo un segundo un segundo voy a ponerme los lentes ok así [NAME REDACTED] perdón eh 106.170 pesos no 173 ah señor eran 106.173 correcto correcto pero ahí ahí me descuentan tres pesos según la ley 20.000 y tanto porque yo yo hice el depósito de 106.173 pesos pero después yo le diré el código el código aquí tenemos cliente transacción identificación monto código identificador exacto ese es el código
+Agent: Ok Usted debería colocar el valor exacto, señor. 106173. Por eso es que no se ha reflejado acá.
+Customer: ¿Me puede [NAME REDACTED], por favor?
+Agent: ¿Ah? ¿Me puede usted [NAME REDACTED]?
+Customer: Voy a hacer lo posible por [NAME REDACTED], porque yo soy malo con estas cosas.
+Agent: [NAME REDACTED] correo, por favor.
+Customer: S s ayer te lo mand el que usted hizo en la la noche lo envi S lo envi [NAME REDACTED] a un lado un caballero que me hace un rec y yo no lo puedo hacer Él me [NAME REDACTED].
+Agent: Ayer.
+Customer: Y eso fue temprano, [NAME REDACTED], como a las 6 y media por ahí.
+Agent: Ok. Da un momentito, por favor.
+Customer: A las 6, a las 6 de 9.
+Agent: A las 6 de 9 lo mandé.
+Customer: Ok, denme un momentito, por favor.
+Agent: [NAME REDACTED].
+Customer: Un momento, ¿sí?
+Agent: ¿[NAME REDACTED]?
+Customer: [NAME REDACTED].
+Agent: [NAME REDACTED].
+Customer: Me acaba de llegar, ¿sí?
+Agent: [NAME REDACTED].
+Customer: Mira, yo no sabía que se descontaban tres pesos y que eran importantes ocho pesos.
+Agent: Uno le haría [NAME REDACTED].
+Customer: No, es que tiene que ser el valor exactamente el mismo.
+Agent: No, no, [NAME REDACTED], te digo, no sabía porque ahí me di cuenta que después abajo según la ley 20.956, me descontaron estos pesos, pero yo no los sabía, si no le habría [NAME REDACTED].
+Customer: No, es que no puede [NAME REDACTED], tiene que ser el mismo valor que yo le indiqué, 16.173.
+Agent: Si tú revisas el vale, dice 16.173, pero abajito dice, según la ley tanto, menos 3.
+Customer: ¿Pero cuánto usted pagó?
+Agent: ¿Pero cuánto usted pagó?
+Customer: 176.173.
+Agent: Y en el vale que te va a llegar ahí está eso.
+Customer: Ok.
+Agent: Dame un momento.
+Customer: Eso ponía yo.
+Agent: Un momentito.
+Customer: Revísale.
+Agent: Revísalo, hermano.
+Customer: Está el cliente, [NAME REDACTED], el código autorizado, la empresa, SACETIPAY CD convenio identificador monto la ley monto total tipo de deuda sus usan en el en el lugar y yo justo me pidió a la [NAME REDACTED] onda y me hizo la palencia porque aquí en Cajones difícil encontrar una casa de cima que te te acepte 50, 60 o 100
+Agent: ¿[NAME REDACTED] pasa?
+Customer: [NAME REDACTED].
+Agent: Gracias
+Customer: Thank you
+Agent: One moment, okay?
+Customer: Yeah.
+Agent: Thank you.
+Customer: Yes, I have it.
+Agent: It just arrived.
+Customer: [NAME REDACTED], [NAME REDACTED]?
+Agent: Yes.
+Customer: Yes, I have everything.
+Agent: [NAME REDACTED], I'm going to register the payment directly.
+Customer: I'm going to let you know once it's visualized.
+Agent: Okay.
+Customer: We're going to register directly on the payment.
+Agent: Okay.
+Customer: So I'll call you when everything's ready.
+Agent: I put what you gave me, and then down below there are discounts on the bill, I didn't know that.
+Customer: Ok, how much did you pay her?
+Agent: $176,000, $173,000.
+Customer: $106,000, $173,000?
+Agent: Yes.
+Customer: There's the money.
+Agent: I sent you the receipt of the house.
+Customer: Okay, okay.
+Agent: Okay.
+Customer: No, because for $3,000, I wouldn't be able to lose everything.
+Agent: Well, that's fine.
+Customer: That's fine.
+Agent: Let me investigate directly and I'll call you, okay?
+Customer: Yes, yes, yes.
+Agent: Yes, I hope so.
+Customer: One moment.",1757078926.92210.mp3
+6,20.0,80.0,Pass,No clear violation found in the provided conversation snippet.,,Provide more context or details about the conversation to better assess empathy and professionalism. | Consider asking follow-up questions to show more interest and empathy towards the customer.,,Agent_04,100,Masked 33 Name(s),Audio,"Agent: ¿Cómo está, señor [NAME REDACTED]? ¿Le [NAME REDACTED]?
+Customer: Sí, ya, dime. Le estoy llamando directamente. Ayer no pudo hacer [NAME REDACTED].
+Agent: Ayer sí la hice.
+Customer: Usted [NAME REDACTED], pero no se ha reflejado acá.
+Agent: ¿Ah? ¿Usted [NAME REDACTED]?
+Customer: Sí, lo tengo y lo mandé en la foto.
+Agent: Ok, pero directamente usted [NAME REDACTED] con la que usted trabajó con la señora [NAME REDACTED], ¿no?
+Customer: Sí, sí.
+Agent: Ok, entonces, ¿no se acuerda que conversamos para [NAME REDACTED]?
+Customer: [NAME REDACTED], y ahí te mandé los 106 mil y tanto.
+Agent: Ok, verifique qué cantidad usted envió.
+Customer: por favor dame un segundo dame un segundo un segundo un segundo voy a ponerme los lentes ok así [NAME REDACTED] perdón eh 106.170 pesos no 173 ah señor eran 106.173 correcto correcto pero ahí ahí me descuentan tres pesos según la ley 20.000 y tanto porque yo yo hice el depósito de 106.173 pesos pero después yo le diré el código el código aquí tenemos cliente transacción identificación monto código identificador exacto ese es el código
+Agent: Ok Usted debería colocar el valor exacto, señor. 106173. Por eso es que no se ha reflejado acá.
+Customer: ¿Me puede [NAME REDACTED], por favor?
+Agent: ¿Ah? ¿Me puede usted [NAME REDACTED]?
+Customer: Voy a hacer lo posible por [NAME REDACTED], porque yo soy malo con estas cosas.
+Agent: [NAME REDACTED] correo, por favor.
+Customer: S s ayer te lo mand el que usted hizo en la la noche lo envi S lo envi [NAME REDACTED] a un lado un caballero que me hace un rec y yo no lo puedo hacer Él me [NAME REDACTED].
+Agent: Ayer.
+Customer: Y eso fue temprano, [NAME REDACTED], como a las 6 y media por ahí.
+Agent: Ok. Da un momentito, por favor.
+Customer: A las 6, a las 6 de 9.
+Agent: A las 6 de 9 lo mandé.
+Customer: Ok, denme un momentito, por favor.
+Agent: [NAME REDACTED].
+Customer: Un momento, ¿sí?
+Agent: ¿[NAME REDACTED]?
+Customer: [NAME REDACTED].
+Agent: [NAME REDACTED].
+Customer: Me acaba de llegar, ¿sí?
+Agent: [NAME REDACTED].
+Customer: Mira, yo no sabía que se descontaban tres pesos y que eran importantes ocho pesos.
+Agent: Uno le haría [NAME REDACTED].
+Customer: No, es que tiene que ser el valor exactamente el mismo.
+Agent: No, no, [NAME REDACTED], te digo, no sabía porque ahí me di cuenta que después abajo según la ley 20.956, me descontaron estos pesos, pero yo no los sabía, si no le habría [NAME REDACTED].
+Customer: No, es que no puede [NAME REDACTED], tiene que ser el mismo valor que yo le indiqué, 16.173.
+Agent: Si tú revisas el vale, dice 16.173, pero abajito dice, según la ley tanto, menos 3.
+Customer: ¿Pero cuánto usted pagó?
+Agent: ¿Pero cuánto usted pagó?
+Customer: 176.173.
+Agent: Y en el vale que te va a llegar ahí está eso.
+Customer: Ok.
+Agent: Dame un momento.
+Customer: Eso ponía yo.
+Agent: Un momentito.
+Customer: Revísale.
+Agent: Revísalo, hermano.
+Customer: Está el cliente, [NAME REDACTED], el código autorizado, la empresa, SACETIPAY CD convenio identificador monto la ley monto total tipo de deuda sus usan en el en el lugar y yo justo me pidió a la [NAME REDACTED] onda y me hizo la palencia porque aquí en Cajones difícil encontrar una casa de cima que te te acepte 50, 60 o 100
+Agent: ¿[NAME REDACTED] pasa?
+Customer: [NAME REDACTED].
+Agent: Gracias
+Customer: Thank you
+Agent: One moment, okay?
+Customer: Yeah.
+Agent: Thank you.
+Customer: Yes, I have it.
+Agent: It just arrived.
+Customer: [NAME REDACTED], [NAME REDACTED]?
+Agent: Yes.
+Customer: Yes, I have everything.
+Agent: [NAME REDACTED], I'm going to register the payment directly.
+Customer: I'm going to let you know once it's visualized.
+Agent: Okay.
+Customer: We're going to register directly on the payment.
+Agent: Okay.
+Customer: So I'll call you when everything's ready.
+Agent: I put what you gave me, and then down below there are discounts on the bill, I didn't know that.
+Customer: Ok, how much did you pay her?
+Agent: $176,000, $173,000.
+Customer: $106,000, $173,000?
+Agent: Yes.
+Customer: There's the money.
+Agent: I sent you the receipt of the house.
+Customer: Okay, okay.
+Agent: Okay.
+Customer: No, because for $3,000, I wouldn't be able to lose everything.
+Agent: Well, that's fine.
+Customer: That's fine.
+Agent: Let me investigate directly and I'll call you, okay?
+Customer: Yes, yes, yes.
+Agent: Yes, I hope so.
+Customer: One moment.",1757078926.92210.mp3
+7,60.0,80.0,Fail,"Lack of clarity and transparency in communication, failure to provide clear information about fees and deductions",Failure to clearly explain fees and deductions | Lack of transparency in communication,Provide clear and concise information about fees and deductions | Ensure transparency in communication | Use simple and clear language to avoid confusion,,Agent_04,100,Masked 33 Name(s),Audio,"Agent: ¿Cómo está, señor [NAME REDACTED]? ¿Le [NAME REDACTED]?
+Customer: Sí, ya, dime. Le estoy llamando directamente. Ayer no pudo hacer [NAME REDACTED].
+Agent: Ayer sí la hice.
+Customer: Usted [NAME REDACTED], pero no se ha reflejado acá.
+Agent: ¿Ah? ¿Usted [NAME REDACTED]?
+Customer: Sí, lo tengo y lo mandé en la foto.
+Agent: Ok, pero directamente usted [NAME REDACTED] con la que usted trabajó con la señora [NAME REDACTED], ¿no?
+Customer: Sí, sí.
+Agent: Ok, entonces, ¿no se acuerda que conversamos para [NAME REDACTED]?
+Customer: [NAME REDACTED], y ahí te mandé los 106 mil y tanto.
+Agent: Ok, verifique qué cantidad usted envió.
+Customer: por favor dame un segundo dame un segundo un segundo un segundo voy a ponerme los lentes ok así [NAME REDACTED] perdón eh 106.170 pesos no 173 ah señor eran 106.173 correcto correcto pero ahí ahí me descuentan tres pesos según la ley 20.000 y tanto porque yo yo hice el depósito de 106.173 pesos pero después yo le diré el código el código aquí tenemos cliente transacción identificación monto código identificador exacto ese es el código
+Agent: Ok Usted debería colocar el valor exacto, señor. 106173. Por eso es que no se ha reflejado acá.
+Customer: ¿Me puede [NAME REDACTED], por favor?
+Agent: ¿Ah? ¿Me puede usted [NAME REDACTED]?
+Customer: Voy a hacer lo posible por [NAME REDACTED], porque yo soy malo con estas cosas.
+Agent: [NAME REDACTED] correo, por favor.
+Customer: S s ayer te lo mand el que usted hizo en la la noche lo envi S lo envi [NAME REDACTED] a un lado un caballero que me hace un rec y yo no lo puedo hacer Él me [NAME REDACTED].
+Agent: Ayer.
+Customer: Y eso fue temprano, [NAME REDACTED], como a las 6 y media por ahí.
+Agent: Ok. Da un momentito, por favor.
+Customer: A las 6, a las 6 de 9.
+Agent: A las 6 de 9 lo mandé.
+Customer: Ok, denme un momentito, por favor.
+Agent: [NAME REDACTED].
+Customer: Un momento, ¿sí?
+Agent: ¿[NAME REDACTED]?
+Customer: [NAME REDACTED].
+Agent: [NAME REDACTED].
+Customer: Me acaba de llegar, ¿sí?
+Agent: [NAME REDACTED].
+Customer: Mira, yo no sabía que se descontaban tres pesos y que eran importantes ocho pesos.
+Agent: Uno le haría [NAME REDACTED].
+Customer: No, es que tiene que ser el valor exactamente el mismo.
+Agent: No, no, [NAME REDACTED], te digo, no sabía porque ahí me di cuenta que después abajo según la ley 20.956, me descontaron estos pesos, pero yo no los sabía, si no le habría [NAME REDACTED].
+Customer: No, es que no puede [NAME REDACTED], tiene que ser el mismo valor que yo le indiqué, 16.173.
+Agent: Si tú revisas el vale, dice 16.173, pero abajito dice, según la ley tanto, menos 3.
+Customer: ¿Pero cuánto usted pagó?
+Agent: ¿Pero cuánto usted pagó?
+Customer: 176.173.
+Agent: Y en el vale que te va a llegar ahí está eso.
+Customer: Ok.
+Agent: Dame un momento.
+Customer: Eso ponía yo.
+Agent: Un momentito.
+Customer: Revísale.
+Agent: Revísalo, hermano.
+Customer: Está el cliente, [NAME REDACTED], el código autorizado, la empresa, SACETIPAY CD convenio identificador monto la ley monto total tipo de deuda sus usan en el en el lugar y yo justo me pidió a la [NAME REDACTED] onda y me hizo la palencia porque aquí en Cajones difícil encontrar una casa de cima que te te acepte 50, 60 o 100
+Agent: ¿[NAME REDACTED] pasa?
+Customer: [NAME REDACTED].
+Agent: Gracias
+Customer: Thank you
+Agent: One moment, okay?
+Customer: Yeah.
+Agent: Thank you.
+Customer: Yes, I have it.
+Agent: It just arrived.
+Customer: [NAME REDACTED], [NAME REDACTED]?
+Agent: Yes.
+Customer: Yes, I have everything.
+Agent: [NAME REDACTED], I'm going to register the payment directly.
+Customer: I'm going to let you know once it's visualized.
+Agent: Okay.
+Customer: We're going to register directly on the payment.
+Agent: Okay.
+Customer: So I'll call you when everything's ready.
+Agent: I put what you gave me, and then down below there are discounts on the bill, I didn't know that.
+Customer: Ok, how much did you pay her?
+Agent: $176,000, $173,000.
+Customer: $106,000, $173,000?
+Agent: Yes.
+Customer: There's the money.
+Agent: I sent you the receipt of the house.
+Customer: Okay, okay.
+Agent: Okay.
+Customer: No, because for $3,000, I wouldn't be able to lose everything.
+Agent: Well, that's fine.
+Customer: That's fine.
+Agent: Let me investigate directly and I'll call you, okay?
+Customer: Yes, yes, yes.
+Agent: Yes, I hope so.
+Customer: One moment.",1757078926.92210.mp3
+8,20.0,60.0,Fail,"The agent failed to provide accurate information and seemed confused about the payment amount, also repeated the customer's question instead of providing a clear answer.",Lack of clarity in communication | Inability to provide accurate information | Unprofessional repetition of customer's question,Provide clear and concise information to the customer | Ensure understanding of the payment amount and details before responding | Offer a solution or alternative instead of repeating the customer's question,,Agent_04,100,Masked 33 Name(s),Audio,"Agent: ¿Cómo está, señor [NAME REDACTED]? ¿Le [NAME REDACTED]?
+Customer: Sí, ya, dime. Le estoy llamando directamente. Ayer no pudo hacer [NAME REDACTED].
+Agent: Ayer sí la hice.
+Customer: Usted [NAME REDACTED], pero no se ha reflejado acá.
+Agent: ¿Ah? ¿Usted [NAME REDACTED]?
+Customer: Sí, lo tengo y lo mandé en la foto.
+Agent: Ok, pero directamente usted [NAME REDACTED] con la que usted trabajó con la señora [NAME REDACTED], ¿no?
+Customer: Sí, sí.
+Agent: Ok, entonces, ¿no se acuerda que conversamos para [NAME REDACTED]?
+Customer: [NAME REDACTED], y ahí te mandé los 106 mil y tanto.
+Agent: Ok, verifique qué cantidad usted envió.
+Customer: por favor dame un segundo dame un segundo un segundo un segundo voy a ponerme los lentes ok así [NAME REDACTED] perdón eh 106.170 pesos no 173 ah señor eran 106.173 correcto correcto pero ahí ahí me descuentan tres pesos según la ley 20.000 y tanto porque yo yo hice el depósito de 106.173 pesos pero después yo le diré el código el código aquí tenemos cliente transacción identificación monto código identificador exacto ese es el código
+Agent: Ok Usted debería colocar el valor exacto, señor. 106173. Por eso es que no se ha reflejado acá.
+Customer: ¿Me puede [NAME REDACTED], por favor?
+Agent: ¿Ah? ¿Me puede usted [NAME REDACTED]?
+Customer: Voy a hacer lo posible por [NAME REDACTED], porque yo soy malo con estas cosas.
+Agent: [NAME REDACTED] correo, por favor.
+Customer: S s ayer te lo mand el que usted hizo en la la noche lo envi S lo envi [NAME REDACTED] a un lado un caballero que me hace un rec y yo no lo puedo hacer Él me [NAME REDACTED].
+Agent: Ayer.
+Customer: Y eso fue temprano, [NAME REDACTED], como a las 6 y media por ahí.
+Agent: Ok. Da un momentito, por favor.
+Customer: A las 6, a las 6 de 9.
+Agent: A las 6 de 9 lo mandé.
+Customer: Ok, denme un momentito, por favor.
+Agent: [NAME REDACTED].
+Customer: Un momento, ¿sí?
+Agent: ¿[NAME REDACTED]?
+Customer: [NAME REDACTED].
+Agent: [NAME REDACTED].
+Customer: Me acaba de llegar, ¿sí?
+Agent: [NAME REDACTED].
+Customer: Mira, yo no sabía que se descontaban tres pesos y que eran importantes ocho pesos.
+Agent: Uno le haría [NAME REDACTED].
+Customer: No, es que tiene que ser el valor exactamente el mismo.
+Agent: No, no, [NAME REDACTED], te digo, no sabía porque ahí me di cuenta que después abajo según la ley 20.956, me descontaron estos pesos, pero yo no los sabía, si no le habría [NAME REDACTED].
+Customer: No, es que no puede [NAME REDACTED], tiene que ser el mismo valor que yo le indiqué, 16.173.
+Agent: Si tú revisas el vale, dice 16.173, pero abajito dice, según la ley tanto, menos 3.
+Customer: ¿Pero cuánto usted pagó?
+Agent: ¿Pero cuánto usted pagó?
+Customer: 176.173.
+Agent: Y en el vale que te va a llegar ahí está eso.
+Customer: Ok.
+Agent: Dame un momento.
+Customer: Eso ponía yo.
+Agent: Un momentito.
+Customer: Revísale.
+Agent: Revísalo, hermano.
+Customer: Está el cliente, [NAME REDACTED], el código autorizado, la empresa, SACETIPAY CD convenio identificador monto la ley monto total tipo de deuda sus usan en el en el lugar y yo justo me pidió a la [NAME REDACTED] onda y me hizo la palencia porque aquí en Cajones difícil encontrar una casa de cima que te te acepte 50, 60 o 100
+Agent: ¿[NAME REDACTED] pasa?
+Customer: [NAME REDACTED].
+Agent: Gracias
+Customer: Thank you
+Agent: One moment, okay?
+Customer: Yeah.
+Agent: Thank you.
+Customer: Yes, I have it.
+Agent: It just arrived.
+Customer: [NAME REDACTED], [NAME REDACTED]?
+Agent: Yes.
+Customer: Yes, I have everything.
+Agent: [NAME REDACTED], I'm going to register the payment directly.
+Customer: I'm going to let you know once it's visualized.
+Agent: Okay.
+Customer: We're going to register directly on the payment.
+Agent: Okay.
+Customer: So I'll call you when everything's ready.
+Agent: I put what you gave me, and then down below there are discounts on the bill, I didn't know that.
+Customer: Ok, how much did you pay her?
+Agent: $176,000, $173,000.
+Customer: $106,000, $173,000?
+Agent: Yes.
+Customer: There's the money.
+Agent: I sent you the receipt of the house.
+Customer: Okay, okay.
+Agent: Okay.
+Customer: No, because for $3,000, I wouldn't be able to lose everything.
+Agent: Well, that's fine.
+Customer: That's fine.
+Agent: Let me investigate directly and I'll call you, okay?
+Customer: Yes, yes, yes.
+Agent: Yes, I hope so.
+Customer: One moment.",1757078926.92210.mp3
+9,20.0,40.0,Fail,The conversation lacks clear communication and resolution. The agent seems to be stalling or unsure of how to assist the customer.,Unclear communication | Lack of resolution | Inadequate assistance,Provide clear and concise information to the customer | Offer a direct solution or alternatives to resolve the issue | Ensure active listening and empathize with the customer's concerns,,Agent_04,100,Masked 33 Name(s),Audio,"Agent: ¿Cómo está, señor [NAME REDACTED]? ¿Le [NAME REDACTED]?
+Customer: Sí, ya, dime. Le estoy llamando directamente. Ayer no pudo hacer [NAME REDACTED].
+Agent: Ayer sí la hice.
+Customer: Usted [NAME REDACTED], pero no se ha reflejado acá.
+Agent: ¿Ah? ¿Usted [NAME REDACTED]?
+Customer: Sí, lo tengo y lo mandé en la foto.
+Agent: Ok, pero directamente usted [NAME REDACTED] con la que usted trabajó con la señora [NAME REDACTED], ¿no?
+Customer: Sí, sí.
+Agent: Ok, entonces, ¿no se acuerda que conversamos para [NAME REDACTED]?
+Customer: [NAME REDACTED], y ahí te mandé los 106 mil y tanto.
+Agent: Ok, verifique qué cantidad usted envió.
+Customer: por favor dame un segundo dame un segundo un segundo un segundo voy a ponerme los lentes ok así [NAME REDACTED] perdón eh 106.170 pesos no 173 ah señor eran 106.173 correcto correcto pero ahí ahí me descuentan tres pesos según la ley 20.000 y tanto porque yo yo hice el depósito de 106.173 pesos pero después yo le diré el código el código aquí tenemos cliente transacción identificación monto código identificador exacto ese es el código
+Agent: Ok Usted debería colocar el valor exacto, señor. 106173. Por eso es que no se ha reflejado acá.
+Customer: ¿Me puede [NAME REDACTED], por favor?
+Agent: ¿Ah? ¿Me puede usted [NAME REDACTED]?
+Customer: Voy a hacer lo posible por [NAME REDACTED], porque yo soy malo con estas cosas.
+Agent: [NAME REDACTED] correo, por favor.
+Customer: S s ayer te lo mand el que usted hizo en la la noche lo envi S lo envi [NAME REDACTED] a un lado un caballero que me hace un rec y yo no lo puedo hacer Él me [NAME REDACTED].
+Agent: Ayer.
+Customer: Y eso fue temprano, [NAME REDACTED], como a las 6 y media por ahí.
+Agent: Ok. Da un momentito, por favor.
+Customer: A las 6, a las 6 de 9.
+Agent: A las 6 de 9 lo mandé.
+Customer: Ok, denme un momentito, por favor.
+Agent: [NAME REDACTED].
+Customer: Un momento, ¿sí?
+Agent: ¿[NAME REDACTED]?
+Customer: [NAME REDACTED].
+Agent: [NAME REDACTED].
+Customer: Me acaba de llegar, ¿sí?
+Agent: [NAME REDACTED].
+Customer: Mira, yo no sabía que se descontaban tres pesos y que eran importantes ocho pesos.
+Agent: Uno le haría [NAME REDACTED].
+Customer: No, es que tiene que ser el valor exactamente el mismo.
+Agent: No, no, [NAME REDACTED], te digo, no sabía porque ahí me di cuenta que después abajo según la ley 20.956, me descontaron estos pesos, pero yo no los sabía, si no le habría [NAME REDACTED].
+Customer: No, es que no puede [NAME REDACTED], tiene que ser el mismo valor que yo le indiqué, 16.173.
+Agent: Si tú revisas el vale, dice 16.173, pero abajito dice, según la ley tanto, menos 3.
+Customer: ¿Pero cuánto usted pagó?
+Agent: ¿Pero cuánto usted pagó?
+Customer: 176.173.
+Agent: Y en el vale que te va a llegar ahí está eso.
+Customer: Ok.
+Agent: Dame un momento.
+Customer: Eso ponía yo.
+Agent: Un momentito.
+Customer: Revísale.
+Agent: Revísalo, hermano.
+Customer: Está el cliente, [NAME REDACTED], el código autorizado, la empresa, SACETIPAY CD convenio identificador monto la ley monto total tipo de deuda sus usan en el en el lugar y yo justo me pidió a la [NAME REDACTED] onda y me hizo la palencia porque aquí en Cajones difícil encontrar una casa de cima que te te acepte 50, 60 o 100
+Agent: ¿[NAME REDACTED] pasa?
+Customer: [NAME REDACTED].
+Agent: Gracias
+Customer: Thank you
+Agent: One moment, okay?
+Customer: Yeah.
+Agent: Thank you.
+Customer: Yes, I have it.
+Agent: It just arrived.
+Customer: [NAME REDACTED], [NAME REDACTED]?
+Agent: Yes.
+Customer: Yes, I have everything.
+Agent: [NAME REDACTED], I'm going to register the payment directly.
+Customer: I'm going to let you know once it's visualized.
+Agent: Okay.
+Customer: We're going to register directly on the payment.
+Agent: Okay.
+Customer: So I'll call you when everything's ready.
+Agent: I put what you gave me, and then down below there are discounts on the bill, I didn't know that.
+Customer: Ok, how much did you pay her?
+Agent: $176,000, $173,000.
+Customer: $106,000, $173,000?
+Agent: Yes.
+Customer: There's the money.
+Agent: I sent you the receipt of the house.
+Customer: Okay, okay.
+Agent: Okay.
+Customer: No, because for $3,000, I wouldn't be able to lose everything.
+Agent: Well, that's fine.
+Customer: That's fine.
+Agent: Let me investigate directly and I'll call you, okay?
+Customer: Yes, yes, yes.
+Agent: Yes, I hope so.
+Customer: One moment.",1757078926.92210.mp3
+10,80.0,60.0,Fail,"Lack of clear and concise communication, failure to address customer's concerns, and unprofessional tone",Unprofessional language and tone | Lack of clear communication | Failure to address customer's concerns,Use a more professional tone and language | Clearly address customer's concerns and provide solutions | Improve active listening skills to better understand customer's needs,,Agent_04,100,Masked 33 Name(s),Audio,"Agent: ¿Cómo está, señor [NAME REDACTED]? ¿Le [NAME REDACTED]?
+Customer: Sí, ya, dime. Le estoy llamando directamente. Ayer no pudo hacer [NAME REDACTED].
+Agent: Ayer sí la hice.
+Customer: Usted [NAME REDACTED], pero no se ha reflejado acá.
+Agent: ¿Ah? ¿Usted [NAME REDACTED]?
+Customer: Sí, lo tengo y lo mandé en la foto.
+Agent: Ok, pero directamente usted [NAME REDACTED] con la que usted trabajó con la señora [NAME REDACTED], ¿no?
+Customer: Sí, sí.
+Agent: Ok, entonces, ¿no se acuerda que conversamos para [NAME REDACTED]?
+Customer: [NAME REDACTED], y ahí te mandé los 106 mil y tanto.
+Agent: Ok, verifique qué cantidad usted envió.
+Customer: por favor dame un segundo dame un segundo un segundo un segundo voy a ponerme los lentes ok así [NAME REDACTED] perdón eh 106.170 pesos no 173 ah señor eran 106.173 correcto correcto pero ahí ahí me descuentan tres pesos según la ley 20.000 y tanto porque yo yo hice el depósito de 106.173 pesos pero después yo le diré el código el código aquí tenemos cliente transacción identificación monto código identificador exacto ese es el código
+Agent: Ok Usted debería colocar el valor exacto, señor. 106173. Por eso es que no se ha reflejado acá.
+Customer: ¿Me puede [NAME REDACTED], por favor?
+Agent: ¿Ah? ¿Me puede usted [NAME REDACTED]?
+Customer: Voy a hacer lo posible por [NAME REDACTED], porque yo soy malo con estas cosas.
+Agent: [NAME REDACTED] correo, por favor.
+Customer: S s ayer te lo mand el que usted hizo en la la noche lo envi S lo envi [NAME REDACTED] a un lado un caballero que me hace un rec y yo no lo puedo hacer Él me [NAME REDACTED].
+Agent: Ayer.
+Customer: Y eso fue temprano, [NAME REDACTED], como a las 6 y media por ahí.
+Agent: Ok. Da un momentito, por favor.
+Customer: A las 6, a las 6 de 9.
+Agent: A las 6 de 9 lo mandé.
+Customer: Ok, denme un momentito, por favor.
+Agent: [NAME REDACTED].
+Customer: Un momento, ¿sí?
+Agent: ¿[NAME REDACTED]?
+Customer: [NAME REDACTED].
+Agent: [NAME REDACTED].
+Customer: Me acaba de llegar, ¿sí?
+Agent: [NAME REDACTED].
+Customer: Mira, yo no sabía que se descontaban tres pesos y que eran importantes ocho pesos.
+Agent: Uno le haría [NAME REDACTED].
+Customer: No, es que tiene que ser el valor exactamente el mismo.
+Agent: No, no, [NAME REDACTED], te digo, no sabía porque ahí me di cuenta que después abajo según la ley 20.956, me descontaron estos pesos, pero yo no los sabía, si no le habría [NAME REDACTED].
+Customer: No, es que no puede [NAME REDACTED], tiene que ser el mismo valor que yo le indiqué, 16.173.
+Agent: Si tú revisas el vale, dice 16.173, pero abajito dice, según la ley tanto, menos 3.
+Customer: ¿Pero cuánto usted pagó?
+Agent: ¿Pero cuánto usted pagó?
+Customer: 176.173.
+Agent: Y en el vale que te va a llegar ahí está eso.
+Customer: Ok.
+Agent: Dame un momento.
+Customer: Eso ponía yo.
+Agent: Un momentito.
+Customer: Revísale.
+Agent: Revísalo, hermano.
+Customer: Está el cliente, [NAME REDACTED], el código autorizado, la empresa, SACETIPAY CD convenio identificador monto la ley monto total tipo de deuda sus usan en el en el lugar y yo justo me pidió a la [NAME REDACTED] onda y me hizo la palencia porque aquí en Cajones difícil encontrar una casa de cima que te te acepte 50, 60 o 100
+Agent: ¿[NAME REDACTED] pasa?
+Customer: [NAME REDACTED].
+Agent: Gracias
+Customer: Thank you
+Agent: One moment, okay?
+Customer: Yeah.
+Agent: Thank you.
+Customer: Yes, I have it.
+Agent: It just arrived.
+Customer: [NAME REDACTED], [NAME REDACTED]?
+Agent: Yes.
+Customer: Yes, I have everything.
+Agent: [NAME REDACTED], I'm going to register the payment directly.
+Customer: I'm going to let you know once it's visualized.
+Agent: Okay.
+Customer: We're going to register directly on the payment.
+Agent: Okay.
+Customer: So I'll call you when everything's ready.
+Agent: I put what you gave me, and then down below there are discounts on the bill, I didn't know that.
+Customer: Ok, how much did you pay her?
+Agent: $176,000, $173,000.
+Customer: $106,000, $173,000?
+Agent: Yes.
+Customer: There's the money.
+Agent: I sent you the receipt of the house.
+Customer: Okay, okay.
+Agent: Okay.
+Customer: No, because for $3,000, I wouldn't be able to lose everything.
+Agent: Well, that's fine.
+Customer: That's fine.
+Agent: Let me investigate directly and I'll call you, okay?
+Customer: Yes, yes, yes.
+Agent: Yes, I hope so.
+Customer: One moment.",1757078926.92210.mp3
+11,20.0,80.0,Pass,No major policy violations found in the conversation,,Use more empathetic language to acknowledge customer's emotions | Provide clearer resolutions or next steps for the customer's issue,,Agent_04,100,Masked 33 Name(s),Audio,"Agent: ¿Cómo está, señor [NAME REDACTED]? ¿Le [NAME REDACTED]?
+Customer: Sí, ya, dime. Le estoy llamando directamente. Ayer no pudo hacer [NAME REDACTED].
+Agent: Ayer sí la hice.
+Customer: Usted [NAME REDACTED], pero no se ha reflejado acá.
+Agent: ¿Ah? ¿Usted [NAME REDACTED]?
+Customer: Sí, lo tengo y lo mandé en la foto.
+Agent: Ok, pero directamente usted [NAME REDACTED] con la que usted trabajó con la señora [NAME REDACTED], ¿no?
+Customer: Sí, sí.
+Agent: Ok, entonces, ¿no se acuerda que conversamos para [NAME REDACTED]?
+Customer: [NAME REDACTED], y ahí te mandé los 106 mil y tanto.
+Agent: Ok, verifique qué cantidad usted envió.
+Customer: por favor dame un segundo dame un segundo un segundo un segundo voy a ponerme los lentes ok así [NAME REDACTED] perdón eh 106.170 pesos no 173 ah señor eran 106.173 correcto correcto pero ahí ahí me descuentan tres pesos según la ley 20.000 y tanto porque yo yo hice el depósito de 106.173 pesos pero después yo le diré el código el código aquí tenemos cliente transacción identificación monto código identificador exacto ese es el código
+Agent: Ok Usted debería colocar el valor exacto, señor. 106173. Por eso es que no se ha reflejado acá.
+Customer: ¿Me puede [NAME REDACTED], por favor?
+Agent: ¿Ah? ¿Me puede usted [NAME REDACTED]?
+Customer: Voy a hacer lo posible por [NAME REDACTED], porque yo soy malo con estas cosas.
+Agent: [NAME REDACTED] correo, por favor.
+Customer: S s ayer te lo mand el que usted hizo en la la noche lo envi S lo envi [NAME REDACTED] a un lado un caballero que me hace un rec y yo no lo puedo hacer Él me [NAME REDACTED].
+Agent: Ayer.
+Customer: Y eso fue temprano, [NAME REDACTED], como a las 6 y media por ahí.
+Agent: Ok. Da un momentito, por favor.
+Customer: A las 6, a las 6 de 9.
+Agent: A las 6 de 9 lo mandé.
+Customer: Ok, denme un momentito, por favor.
+Agent: [NAME REDACTED].
+Customer: Un momento, ¿sí?
+Agent: ¿[NAME REDACTED]?
+Customer: [NAME REDACTED].
+Agent: [NAME REDACTED].
+Customer: Me acaba de llegar, ¿sí?
+Agent: [NAME REDACTED].
+Customer: Mira, yo no sabía que se descontaban tres pesos y que eran importantes ocho pesos.
+Agent: Uno le haría [NAME REDACTED].
+Customer: No, es que tiene que ser el valor exactamente el mismo.
+Agent: No, no, [NAME REDACTED], te digo, no sabía porque ahí me di cuenta que después abajo según la ley 20.956, me descontaron estos pesos, pero yo no los sabía, si no le habría [NAME REDACTED].
+Customer: No, es que no puede [NAME REDACTED], tiene que ser el mismo valor que yo le indiqué, 16.173.
+Agent: Si tú revisas el vale, dice 16.173, pero abajito dice, según la ley tanto, menos 3.
+Customer: ¿Pero cuánto usted pagó?
+Agent: ¿Pero cuánto usted pagó?
+Customer: 176.173.
+Agent: Y en el vale que te va a llegar ahí está eso.
+Customer: Ok.
+Agent: Dame un momento.
+Customer: Eso ponía yo.
+Agent: Un momentito.
+Customer: Revísale.
+Agent: Revísalo, hermano.
+Customer: Está el cliente, [NAME REDACTED], el código autorizado, la empresa, SACETIPAY CD convenio identificador monto la ley monto total tipo de deuda sus usan en el en el lugar y yo justo me pidió a la [NAME REDACTED] onda y me hizo la palencia porque aquí en Cajones difícil encontrar una casa de cima que te te acepte 50, 60 o 100
+Agent: ¿[NAME REDACTED] pasa?
+Customer: [NAME REDACTED].
+Agent: Gracias
+Customer: Thank you
+Agent: One moment, okay?
+Customer: Yeah.
+Agent: Thank you.
+Customer: Yes, I have it.
+Agent: It just arrived.
+Customer: [NAME REDACTED], [NAME REDACTED]?
+Agent: Yes.
+Customer: Yes, I have everything.
+Agent: [NAME REDACTED], I'm going to register the payment directly.
+Customer: I'm going to let you know once it's visualized.
+Agent: Okay.
+Customer: We're going to register directly on the payment.
+Agent: Okay.
+Customer: So I'll call you when everything's ready.
+Agent: I put what you gave me, and then down below there are discounts on the bill, I didn't know that.
+Customer: Ok, how much did you pay her?
+Agent: $176,000, $173,000.
+Customer: $106,000, $173,000?
+Agent: Yes.
+Customer: There's the money.
+Agent: I sent you the receipt of the house.
+Customer: Okay, okay.
+Agent: Okay.
+Customer: No, because for $3,000, I wouldn't be able to lose everything.
+Agent: Well, that's fine.
+Customer: That's fine.
+Agent: Let me investigate directly and I'll call you, okay?
+Customer: Yes, yes, yes.
+Agent: Yes, I hope so.
+Customer: One moment.",1757078926.92210.mp3
+12,20.0,80.0,Pass,"No sensitive information was shared, and the conversation appears to be a simple confirmation conversation.",,Consider adding more empathetic responses to build rapport with the customer | Expand on the conversation to gather more context or provide additional assistance,,Agent_04,100,Masked 33 Name(s),Audio,"Agent: ¿Cómo está, señor [NAME REDACTED]? ¿Le [NAME REDACTED]?
+Customer: Sí, ya, dime. Le estoy llamando directamente. Ayer no pudo hacer [NAME REDACTED].
+Agent: Ayer sí la hice.
+Customer: Usted [NAME REDACTED], pero no se ha reflejado acá.
+Agent: ¿Ah? ¿Usted [NAME REDACTED]?
+Customer: Sí, lo tengo y lo mandé en la foto.
+Agent: Ok, pero directamente usted [NAME REDACTED] con la que usted trabajó con la señora [NAME REDACTED], ¿no?
+Customer: Sí, sí.
+Agent: Ok, entonces, ¿no se acuerda que conversamos para [NAME REDACTED]?
+Customer: [NAME REDACTED], y ahí te mandé los 106 mil y tanto.
+Agent: Ok, verifique qué cantidad usted envió.
+Customer: por favor dame un segundo dame un segundo un segundo un segundo voy a ponerme los lentes ok así [NAME REDACTED] perdón eh 106.170 pesos no 173 ah señor eran 106.173 correcto correcto pero ahí ahí me descuentan tres pesos según la ley 20.000 y tanto porque yo yo hice el depósito de 106.173 pesos pero después yo le diré el código el código aquí tenemos cliente transacción identificación monto código identificador exacto ese es el código
+Agent: Ok Usted debería colocar el valor exacto, señor. 106173. Por eso es que no se ha reflejado acá.
+Customer: ¿Me puede [NAME REDACTED], por favor?
+Agent: ¿Ah? ¿Me puede usted [NAME REDACTED]?
+Customer: Voy a hacer lo posible por [NAME REDACTED], porque yo soy malo con estas cosas.
+Agent: [NAME REDACTED] correo, por favor.
+Customer: S s ayer te lo mand el que usted hizo en la la noche lo envi S lo envi [NAME REDACTED] a un lado un caballero que me hace un rec y yo no lo puedo hacer Él me [NAME REDACTED].
+Agent: Ayer.
+Customer: Y eso fue temprano, [NAME REDACTED], como a las 6 y media por ahí.
+Agent: Ok. Da un momentito, por favor.
+Customer: A las 6, a las 6 de 9.
+Agent: A las 6 de 9 lo mandé.
+Customer: Ok, denme un momentito, por favor.
+Agent: [NAME REDACTED].
+Customer: Un momento, ¿sí?
+Agent: ¿[NAME REDACTED]?
+Customer: [NAME REDACTED].
+Agent: [NAME REDACTED].
+Customer: Me acaba de llegar, ¿sí?
+Agent: [NAME REDACTED].
+Customer: Mira, yo no sabía que se descontaban tres pesos y que eran importantes ocho pesos.
+Agent: Uno le haría [NAME REDACTED].
+Customer: No, es que tiene que ser el valor exactamente el mismo.
+Agent: No, no, [NAME REDACTED], te digo, no sabía porque ahí me di cuenta que después abajo según la ley 20.956, me descontaron estos pesos, pero yo no los sabía, si no le habría [NAME REDACTED].
+Customer: No, es que no puede [NAME REDACTED], tiene que ser el mismo valor que yo le indiqué, 16.173.
+Agent: Si tú revisas el vale, dice 16.173, pero abajito dice, según la ley tanto, menos 3.
+Customer: ¿Pero cuánto usted pagó?
+Agent: ¿Pero cuánto usted pagó?
+Customer: 176.173.
+Agent: Y en el vale que te va a llegar ahí está eso.
+Customer: Ok.
+Agent: Dame un momento.
+Customer: Eso ponía yo.
+Agent: Un momentito.
+Customer: Revísale.
+Agent: Revísalo, hermano.
+Customer: Está el cliente, [NAME REDACTED], el código autorizado, la empresa, SACETIPAY CD convenio identificador monto la ley monto total tipo de deuda sus usan en el en el lugar y yo justo me pidió a la [NAME REDACTED] onda y me hizo la palencia porque aquí en Cajones difícil encontrar una casa de cima que te te acepte 50, 60 o 100
+Agent: ¿[NAME REDACTED] pasa?
+Customer: [NAME REDACTED].
+Agent: Gracias
+Customer: Thank you
+Agent: One moment, okay?
+Customer: Yeah.
+Agent: Thank you.
+Customer: Yes, I have it.
+Agent: It just arrived.
+Customer: [NAME REDACTED], [NAME REDACTED]?
+Agent: Yes.
+Customer: Yes, I have everything.
+Agent: [NAME REDACTED], I'm going to register the payment directly.
+Customer: I'm going to let you know once it's visualized.
+Agent: Okay.
+Customer: We're going to register directly on the payment.
+Agent: Okay.
+Customer: So I'll call you when everything's ready.
+Agent: I put what you gave me, and then down below there are discounts on the bill, I didn't know that.
+Customer: Ok, how much did you pay her?
+Agent: $176,000, $173,000.
+Customer: $106,000, $173,000?
+Agent: Yes.
+Customer: There's the money.
+Agent: I sent you the receipt of the house.
+Customer: Okay, okay.
+Agent: Okay.
+Customer: No, because for $3,000, I wouldn't be able to lose everything.
+Agent: Well, that's fine.
+Customer: That's fine.
+Agent: Let me investigate directly and I'll call you, okay?
+Customer: Yes, yes, yes.
+Agent: Yes, I hope so.
+Customer: One moment.",1757078926.92210.mp3
+13,20.0,80.0,Pass,No significant policy violations observed in the conversation.,,Show more empathy towards the customer's needs | Provide clear explanations of the payment registration process,,Agent_04,100,Masked 33 Name(s),Audio,"Agent: ¿Cómo está, señor [NAME REDACTED]? ¿Le [NAME REDACTED]?
+Customer: Sí, ya, dime. Le estoy llamando directamente. Ayer no pudo hacer [NAME REDACTED].
+Agent: Ayer sí la hice.
+Customer: Usted [NAME REDACTED], pero no se ha reflejado acá.
+Agent: ¿Ah? ¿Usted [NAME REDACTED]?
+Customer: Sí, lo tengo y lo mandé en la foto.
+Agent: Ok, pero directamente usted [NAME REDACTED] con la que usted trabajó con la señora [NAME REDACTED], ¿no?
+Customer: Sí, sí.
+Agent: Ok, entonces, ¿no se acuerda que conversamos para [NAME REDACTED]?
+Customer: [NAME REDACTED], y ahí te mandé los 106 mil y tanto.
+Agent: Ok, verifique qué cantidad usted envió.
+Customer: por favor dame un segundo dame un segundo un segundo un segundo voy a ponerme los lentes ok así [NAME REDACTED] perdón eh 106.170 pesos no 173 ah señor eran 106.173 correcto correcto pero ahí ahí me descuentan tres pesos según la ley 20.000 y tanto porque yo yo hice el depósito de 106.173 pesos pero después yo le diré el código el código aquí tenemos cliente transacción identificación monto código identificador exacto ese es el código
+Agent: Ok Usted debería colocar el valor exacto, señor. 106173. Por eso es que no se ha reflejado acá.
+Customer: ¿Me puede [NAME REDACTED], por favor?
+Agent: ¿Ah? ¿Me puede usted [NAME REDACTED]?
+Customer: Voy a hacer lo posible por [NAME REDACTED], porque yo soy malo con estas cosas.
+Agent: [NAME REDACTED] correo, por favor.
+Customer: S s ayer te lo mand el que usted hizo en la la noche lo envi S lo envi [NAME REDACTED] a un lado un caballero que me hace un rec y yo no lo puedo hacer Él me [NAME REDACTED].
+Agent: Ayer.
+Customer: Y eso fue temprano, [NAME REDACTED], como a las 6 y media por ahí.
+Agent: Ok. Da un momentito, por favor.
+Customer: A las 6, a las 6 de 9.
+Agent: A las 6 de 9 lo mandé.
+Customer: Ok, denme un momentito, por favor.
+Agent: [NAME REDACTED].
+Customer: Un momento, ¿sí?
+Agent: ¿[NAME REDACTED]?
+Customer: [NAME REDACTED].
+Agent: [NAME REDACTED].
+Customer: Me acaba de llegar, ¿sí?
+Agent: [NAME REDACTED].
+Customer: Mira, yo no sabía que se descontaban tres pesos y que eran importantes ocho pesos.
+Agent: Uno le haría [NAME REDACTED].
+Customer: No, es que tiene que ser el valor exactamente el mismo.
+Agent: No, no, [NAME REDACTED], te digo, no sabía porque ahí me di cuenta que después abajo según la ley 20.956, me descontaron estos pesos, pero yo no los sabía, si no le habría [NAME REDACTED].
+Customer: No, es que no puede [NAME REDACTED], tiene que ser el mismo valor que yo le indiqué, 16.173.
+Agent: Si tú revisas el vale, dice 16.173, pero abajito dice, según la ley tanto, menos 3.
+Customer: ¿Pero cuánto usted pagó?
+Agent: ¿Pero cuánto usted pagó?
+Customer: 176.173.
+Agent: Y en el vale que te va a llegar ahí está eso.
+Customer: Ok.
+Agent: Dame un momento.
+Customer: Eso ponía yo.
+Agent: Un momentito.
+Customer: Revísale.
+Agent: Revísalo, hermano.
+Customer: Está el cliente, [NAME REDACTED], el código autorizado, la empresa, SACETIPAY CD convenio identificador monto la ley monto total tipo de deuda sus usan en el en el lugar y yo justo me pidió a la [NAME REDACTED] onda y me hizo la palencia porque aquí en Cajones difícil encontrar una casa de cima que te te acepte 50, 60 o 100
+Agent: ¿[NAME REDACTED] pasa?
+Customer: [NAME REDACTED].
+Agent: Gracias
+Customer: Thank you
+Agent: One moment, okay?
+Customer: Yeah.
+Agent: Thank you.
+Customer: Yes, I have it.
+Agent: It just arrived.
+Customer: [NAME REDACTED], [NAME REDACTED]?
+Agent: Yes.
+Customer: Yes, I have everything.
+Agent: [NAME REDACTED], I'm going to register the payment directly.
+Customer: I'm going to let you know once it's visualized.
+Agent: Okay.
+Customer: We're going to register directly on the payment.
+Agent: Okay.
+Customer: So I'll call you when everything's ready.
+Agent: I put what you gave me, and then down below there are discounts on the bill, I didn't know that.
+Customer: Ok, how much did you pay her?
+Agent: $176,000, $173,000.
+Customer: $106,000, $173,000?
+Agent: Yes.
+Customer: There's the money.
+Agent: I sent you the receipt of the house.
+Customer: Okay, okay.
+Agent: Okay.
+Customer: No, because for $3,000, I wouldn't be able to lose everything.
+Agent: Well, that's fine.
+Customer: That's fine.
+Agent: Let me investigate directly and I'll call you, okay?
+Customer: Yes, yes, yes.
+Agent: Yes, I hope so.
+Customer: One moment.",1757078926.92210.mp3
+14,20.0,80.0,Fail,"The conversation lacks clarity and seems disorganized. The agent and customer are discussing financial transactions, but the context and specifics are not well-defined.",Lack of clear communication | Insufficient context for financial transactions | Potential privacy concern discussing large financial transactions,Establish clear context for discussions | Ensure all parties are on the same page before proceeding with transactions | Review privacy policies regarding financial discussions,,Agent_04,100,Masked 33 Name(s),Audio,"Agent: ¿Cómo está, señor [NAME REDACTED]? ¿Le [NAME REDACTED]?
+Customer: Sí, ya, dime. Le estoy llamando directamente. Ayer no pudo hacer [NAME REDACTED].
+Agent: Ayer sí la hice.
+Customer: Usted [NAME REDACTED], pero no se ha reflejado acá.
+Agent: ¿Ah? ¿Usted [NAME REDACTED]?
+Customer: Sí, lo tengo y lo mandé en la foto.
+Agent: Ok, pero directamente usted [NAME REDACTED] con la que usted trabajó con la señora [NAME REDACTED], ¿no?
+Customer: Sí, sí.
+Agent: Ok, entonces, ¿no se acuerda que conversamos para [NAME REDACTED]?
+Customer: [NAME REDACTED], y ahí te mandé los 106 mil y tanto.
+Agent: Ok, verifique qué cantidad usted envió.
+Customer: por favor dame un segundo dame un segundo un segundo un segundo voy a ponerme los lentes ok así [NAME REDACTED] perdón eh 106.170 pesos no 173 ah señor eran 106.173 correcto correcto pero ahí ahí me descuentan tres pesos según la ley 20.000 y tanto porque yo yo hice el depósito de 106.173 pesos pero después yo le diré el código el código aquí tenemos cliente transacción identificación monto código identificador exacto ese es el código
+Agent: Ok Usted debería colocar el valor exacto, señor. 106173. Por eso es que no se ha reflejado acá.
+Customer: ¿Me puede [NAME REDACTED], por favor?
+Agent: ¿Ah? ¿Me puede usted [NAME REDACTED]?
+Customer: Voy a hacer lo posible por [NAME REDACTED], porque yo soy malo con estas cosas.
+Agent: [NAME REDACTED] correo, por favor.
+Customer: S s ayer te lo mand el que usted hizo en la la noche lo envi S lo envi [NAME REDACTED] a un lado un caballero que me hace un rec y yo no lo puedo hacer Él me [NAME REDACTED].
+Agent: Ayer.
+Customer: Y eso fue temprano, [NAME REDACTED], como a las 6 y media por ahí.
+Agent: Ok. Da un momentito, por favor.
+Customer: A las 6, a las 6 de 9.
+Agent: A las 6 de 9 lo mandé.
+Customer: Ok, denme un momentito, por favor.
+Agent: [NAME REDACTED].
+Customer: Un momento, ¿sí?
+Agent: ¿[NAME REDACTED]?
+Customer: [NAME REDACTED].
+Agent: [NAME REDACTED].
+Customer: Me acaba de llegar, ¿sí?
+Agent: [NAME REDACTED].
+Customer: Mira, yo no sabía que se descontaban tres pesos y que eran importantes ocho pesos.
+Agent: Uno le haría [NAME REDACTED].
+Customer: No, es que tiene que ser el valor exactamente el mismo.
+Agent: No, no, [NAME REDACTED], te digo, no sabía porque ahí me di cuenta que después abajo según la ley 20.956, me descontaron estos pesos, pero yo no los sabía, si no le habría [NAME REDACTED].
+Customer: No, es que no puede [NAME REDACTED], tiene que ser el mismo valor que yo le indiqué, 16.173.
+Agent: Si tú revisas el vale, dice 16.173, pero abajito dice, según la ley tanto, menos 3.
+Customer: ¿Pero cuánto usted pagó?
+Agent: ¿Pero cuánto usted pagó?
+Customer: 176.173.
+Agent: Y en el vale que te va a llegar ahí está eso.
+Customer: Ok.
+Agent: Dame un momento.
+Customer: Eso ponía yo.
+Agent: Un momentito.
+Customer: Revísale.
+Agent: Revísalo, hermano.
+Customer: Está el cliente, [NAME REDACTED], el código autorizado, la empresa, SACETIPAY CD convenio identificador monto la ley monto total tipo de deuda sus usan en el en el lugar y yo justo me pidió a la [NAME REDACTED] onda y me hizo la palencia porque aquí en Cajones difícil encontrar una casa de cima que te te acepte 50, 60 o 100
+Agent: ¿[NAME REDACTED] pasa?
+Customer: [NAME REDACTED].
+Agent: Gracias
+Customer: Thank you
+Agent: One moment, okay?
+Customer: Yeah.
+Agent: Thank you.
+Customer: Yes, I have it.
+Agent: It just arrived.
+Customer: [NAME REDACTED], [NAME REDACTED]?
+Agent: Yes.
+Customer: Yes, I have everything.
+Agent: [NAME REDACTED], I'm going to register the payment directly.
+Customer: I'm going to let you know once it's visualized.
+Agent: Okay.
+Customer: We're going to register directly on the payment.
+Agent: Okay.
+Customer: So I'll call you when everything's ready.
+Agent: I put what you gave me, and then down below there are discounts on the bill, I didn't know that.
+Customer: Ok, how much did you pay her?
+Agent: $176,000, $173,000.
+Customer: $106,000, $173,000?
+Agent: Yes.
+Customer: There's the money.
+Agent: I sent you the receipt of the house.
+Customer: Okay, okay.
+Agent: Okay.
+Customer: No, because for $3,000, I wouldn't be able to lose everything.
+Agent: Well, that's fine.
+Customer: That's fine.
+Agent: Let me investigate directly and I'll call you, okay?
+Customer: Yes, yes, yes.
+Agent: Yes, I hope so.
+Customer: One moment.",1757078926.92210.mp3
+15,20.0,80.0,Pass,No specific policy violations were found in the conversation.,,Show more empathy towards the customer by asking about their concerns or needs. | Provide a clear summary of the transaction or service provided.,,Agent_04,100,Masked 33 Name(s),Audio,"Agent: ¿Cómo está, señor [NAME REDACTED]? ¿Le [NAME REDACTED]?
+Customer: Sí, ya, dime. Le estoy llamando directamente. Ayer no pudo hacer [NAME REDACTED].
+Agent: Ayer sí la hice.
+Customer: Usted [NAME REDACTED], pero no se ha reflejado acá.
+Agent: ¿Ah? ¿Usted [NAME REDACTED]?
+Customer: Sí, lo tengo y lo mandé en la foto.
+Agent: Ok, pero directamente usted [NAME REDACTED] con la que usted trabajó con la señora [NAME REDACTED], ¿no?
+Customer: Sí, sí.
+Agent: Ok, entonces, ¿no se acuerda que conversamos para [NAME REDACTED]?
+Customer: [NAME REDACTED], y ahí te mandé los 106 mil y tanto.
+Agent: Ok, verifique qué cantidad usted envió.
+Customer: por favor dame un segundo dame un segundo un segundo un segundo voy a ponerme los lentes ok así [NAME REDACTED] perdón eh 106.170 pesos no 173 ah señor eran 106.173 correcto correcto pero ahí ahí me descuentan tres pesos según la ley 20.000 y tanto porque yo yo hice el depósito de 106.173 pesos pero después yo le diré el código el código aquí tenemos cliente transacción identificación monto código identificador exacto ese es el código
+Agent: Ok Usted debería colocar el valor exacto, señor. 106173. Por eso es que no se ha reflejado acá.
+Customer: ¿Me puede [NAME REDACTED], por favor?
+Agent: ¿Ah? ¿Me puede usted [NAME REDACTED]?
+Customer: Voy a hacer lo posible por [NAME REDACTED], porque yo soy malo con estas cosas.
+Agent: [NAME REDACTED] correo, por favor.
+Customer: S s ayer te lo mand el que usted hizo en la la noche lo envi S lo envi [NAME REDACTED] a un lado un caballero que me hace un rec y yo no lo puedo hacer Él me [NAME REDACTED].
+Agent: Ayer.
+Customer: Y eso fue temprano, [NAME REDACTED], como a las 6 y media por ahí.
+Agent: Ok. Da un momentito, por favor.
+Customer: A las 6, a las 6 de 9.
+Agent: A las 6 de 9 lo mandé.
+Customer: Ok, denme un momentito, por favor.
+Agent: [NAME REDACTED].
+Customer: Un momento, ¿sí?
+Agent: ¿[NAME REDACTED]?
+Customer: [NAME REDACTED].
+Agent: [NAME REDACTED].
+Customer: Me acaba de llegar, ¿sí?
+Agent: [NAME REDACTED].
+Customer: Mira, yo no sabía que se descontaban tres pesos y que eran importantes ocho pesos.
+Agent: Uno le haría [NAME REDACTED].
+Customer: No, es que tiene que ser el valor exactamente el mismo.
+Agent: No, no, [NAME REDACTED], te digo, no sabía porque ahí me di cuenta que después abajo según la ley 20.956, me descontaron estos pesos, pero yo no los sabía, si no le habría [NAME REDACTED].
+Customer: No, es que no puede [NAME REDACTED], tiene que ser el mismo valor que yo le indiqué, 16.173.
+Agent: Si tú revisas el vale, dice 16.173, pero abajito dice, según la ley tanto, menos 3.
+Customer: ¿Pero cuánto usted pagó?
+Agent: ¿Pero cuánto usted pagó?
+Customer: 176.173.
+Agent: Y en el vale que te va a llegar ahí está eso.
+Customer: Ok.
+Agent: Dame un momento.
+Customer: Eso ponía yo.
+Agent: Un momentito.
+Customer: Revísale.
+Agent: Revísalo, hermano.
+Customer: Está el cliente, [NAME REDACTED], el código autorizado, la empresa, SACETIPAY CD convenio identificador monto la ley monto total tipo de deuda sus usan en el en el lugar y yo justo me pidió a la [NAME REDACTED] onda y me hizo la palencia porque aquí en Cajones difícil encontrar una casa de cima que te te acepte 50, 60 o 100
+Agent: ¿[NAME REDACTED] pasa?
+Customer: [NAME REDACTED].
+Agent: Gracias
+Customer: Thank you
+Agent: One moment, okay?
+Customer: Yeah.
+Agent: Thank you.
+Customer: Yes, I have it.
+Agent: It just arrived.
+Customer: [NAME REDACTED], [NAME REDACTED]?
+Agent: Yes.
+Customer: Yes, I have everything.
+Agent: [NAME REDACTED], I'm going to register the payment directly.
+Customer: I'm going to let you know once it's visualized.
+Agent: Okay.
+Customer: We're going to register directly on the payment.
+Agent: Okay.
+Customer: So I'll call you when everything's ready.
+Agent: I put what you gave me, and then down below there are discounts on the bill, I didn't know that.
+Customer: Ok, how much did you pay her?
+Agent: $176,000, $173,000.
+Customer: $106,000, $173,000?
+Agent: Yes.
+Customer: There's the money.
+Agent: I sent you the receipt of the house.
+Customer: Okay, okay.
+Agent: Okay.
+Customer: No, because for $3,000, I wouldn't be able to lose everything.
+Agent: Well, that's fine.
+Customer: That's fine.
+Agent: Let me investigate directly and I'll call you, okay?
+Customer: Yes, yes, yes.
+Agent: Yes, I hope so.
+Customer: One moment.",1757078926.92210.mp3
+16,20.0,80.0,Pass,"The agent's responses seem brief and lack emotional understanding, but they still maintain a professional tone and do not violate any specific policies.",,Show more empathy towards the customer's concerns | Provide more detailed explanations and follow-up questions to better understand the customer's needs,,Agent_04,100,Masked 33 Name(s),Audio,"Agent: ¿Cómo está, señor [NAME REDACTED]? ¿Le [NAME REDACTED]?
+Customer: Sí, ya, dime. Le estoy llamando directamente. Ayer no pudo hacer [NAME REDACTED].
+Agent: Ayer sí la hice.
+Customer: Usted [NAME REDACTED], pero no se ha reflejado acá.
+Agent: ¿Ah? ¿Usted [NAME REDACTED]?
+Customer: Sí, lo tengo y lo mandé en la foto.
+Agent: Ok, pero directamente usted [NAME REDACTED] con la que usted trabajó con la señora [NAME REDACTED], ¿no?
+Customer: Sí, sí.
+Agent: Ok, entonces, ¿no se acuerda que conversamos para [NAME REDACTED]?
+Customer: [NAME REDACTED], y ahí te mandé los 106 mil y tanto.
+Agent: Ok, verifique qué cantidad usted envió.
+Customer: por favor dame un segundo dame un segundo un segundo un segundo voy a ponerme los lentes ok así [NAME REDACTED] perdón eh 106.170 pesos no 173 ah señor eran 106.173 correcto correcto pero ahí ahí me descuentan tres pesos según la ley 20.000 y tanto porque yo yo hice el depósito de 106.173 pesos pero después yo le diré el código el código aquí tenemos cliente transacción identificación monto código identificador exacto ese es el código
+Agent: Ok Usted debería colocar el valor exacto, señor. 106173. Por eso es que no se ha reflejado acá.
+Customer: ¿Me puede [NAME REDACTED], por favor?
+Agent: ¿Ah? ¿Me puede usted [NAME REDACTED]?
+Customer: Voy a hacer lo posible por [NAME REDACTED], porque yo soy malo con estas cosas.
+Agent: [NAME REDACTED] correo, por favor.
+Customer: S s ayer te lo mand el que usted hizo en la la noche lo envi S lo envi [NAME REDACTED] a un lado un caballero que me hace un rec y yo no lo puedo hacer Él me [NAME REDACTED].
+Agent: Ayer.
+Customer: Y eso fue temprano, [NAME REDACTED], como a las 6 y media por ahí.
+Agent: Ok. Da un momentito, por favor.
+Customer: A las 6, a las 6 de 9.
+Agent: A las 6 de 9 lo mandé.
+Customer: Ok, denme un momentito, por favor.
+Agent: [NAME REDACTED].
+Customer: Un momento, ¿sí?
+Agent: ¿[NAME REDACTED]?
+Customer: [NAME REDACTED].
+Agent: [NAME REDACTED].
+Customer: Me acaba de llegar, ¿sí?
+Agent: [NAME REDACTED].
+Customer: Mira, yo no sabía que se descontaban tres pesos y que eran importantes ocho pesos.
+Agent: Uno le haría [NAME REDACTED].
+Customer: No, es que tiene que ser el valor exactamente el mismo.
+Agent: No, no, [NAME REDACTED], te digo, no sabía porque ahí me di cuenta que después abajo según la ley 20.956, me descontaron estos pesos, pero yo no los sabía, si no le habría [NAME REDACTED].
+Customer: No, es que no puede [NAME REDACTED], tiene que ser el mismo valor que yo le indiqué, 16.173.
+Agent: Si tú revisas el vale, dice 16.173, pero abajito dice, según la ley tanto, menos 3.
+Customer: ¿Pero cuánto usted pagó?
+Agent: ¿Pero cuánto usted pagó?
+Customer: 176.173.
+Agent: Y en el vale que te va a llegar ahí está eso.
+Customer: Ok.
+Agent: Dame un momento.
+Customer: Eso ponía yo.
+Agent: Un momentito.
+Customer: Revísale.
+Agent: Revísalo, hermano.
+Customer: Está el cliente, [NAME REDACTED], el código autorizado, la empresa, SACETIPAY CD convenio identificador monto la ley monto total tipo de deuda sus usan en el en el lugar y yo justo me pidió a la [NAME REDACTED] onda y me hizo la palencia porque aquí en Cajones difícil encontrar una casa de cima que te te acepte 50, 60 o 100
+Agent: ¿[NAME REDACTED] pasa?
+Customer: [NAME REDACTED].
+Agent: Gracias
+Customer: Thank you
+Agent: One moment, okay?
+Customer: Yeah.
+Agent: Thank you.
+Customer: Yes, I have it.
+Agent: It just arrived.
+Customer: [NAME REDACTED], [NAME REDACTED]?
+Agent: Yes.
+Customer: Yes, I have everything.
+Agent: [NAME REDACTED], I'm going to register the payment directly.
+Customer: I'm going to let you know once it's visualized.
+Agent: Okay.
+Customer: We're going to register directly on the payment.
+Agent: Okay.
+Customer: So I'll call you when everything's ready.
+Agent: I put what you gave me, and then down below there are discounts on the bill, I didn't know that.
+Customer: Ok, how much did you pay her?
+Agent: $176,000, $173,000.
+Customer: $106,000, $173,000?
+Agent: Yes.
+Customer: There's the money.
+Agent: I sent you the receipt of the house.
+Customer: Okay, okay.
+Agent: Okay.
+Customer: No, because for $3,000, I wouldn't be able to lose everything.
+Agent: Well, that's fine.
+Customer: That's fine.
+Agent: Let me investigate directly and I'll call you, okay?
+Customer: Yes, yes, yes.
+Agent: Yes, I hope so.
+Customer: One moment.",1757078926.92210.mp3
+17,20.0,80.0,Pass,No specific policy violations or sensitive information was shared in the conversation.,,Engage in more empathetic conversation by asking open-ended questions | Provide more detailed information to address customer concerns,,Agent_04,100,Masked 33 Name(s),Audio,"Agent: ¿Cómo está, señor [NAME REDACTED]? ¿Le [NAME REDACTED]?
+Customer: Sí, ya, dime. Le estoy llamando directamente. Ayer no pudo hacer [NAME REDACTED].
+Agent: Ayer sí la hice.
+Customer: Usted [NAME REDACTED], pero no se ha reflejado acá.
+Agent: ¿Ah? ¿Usted [NAME REDACTED]?
+Customer: Sí, lo tengo y lo mandé en la foto.
+Agent: Ok, pero directamente usted [NAME REDACTED] con la que usted trabajó con la señora [NAME REDACTED], ¿no?
+Customer: Sí, sí.
+Agent: Ok, entonces, ¿no se acuerda que conversamos para [NAME REDACTED]?
+Customer: [NAME REDACTED], y ahí te mandé los 106 mil y tanto.
+Agent: Ok, verifique qué cantidad usted envió.
+Customer: por favor dame un segundo dame un segundo un segundo un segundo voy a ponerme los lentes ok así [NAME REDACTED] perdón eh 106.170 pesos no 173 ah señor eran 106.173 correcto correcto pero ahí ahí me descuentan tres pesos según la ley 20.000 y tanto porque yo yo hice el depósito de 106.173 pesos pero después yo le diré el código el código aquí tenemos cliente transacción identificación monto código identificador exacto ese es el código
+Agent: Ok Usted debería colocar el valor exacto, señor. 106173. Por eso es que no se ha reflejado acá.
+Customer: ¿Me puede [NAME REDACTED], por favor?
+Agent: ¿Ah? ¿Me puede usted [NAME REDACTED]?
+Customer: Voy a hacer lo posible por [NAME REDACTED], porque yo soy malo con estas cosas.
+Agent: [NAME REDACTED] correo, por favor.
+Customer: S s ayer te lo mand el que usted hizo en la la noche lo envi S lo envi [NAME REDACTED] a un lado un caballero que me hace un rec y yo no lo puedo hacer Él me [NAME REDACTED].
+Agent: Ayer.
+Customer: Y eso fue temprano, [NAME REDACTED], como a las 6 y media por ahí.
+Agent: Ok. Da un momentito, por favor.
+Customer: A las 6, a las 6 de 9.
+Agent: A las 6 de 9 lo mandé.
+Customer: Ok, denme un momentito, por favor.
+Agent: [NAME REDACTED].
+Customer: Un momento, ¿sí?
+Agent: ¿[NAME REDACTED]?
+Customer: [NAME REDACTED].
+Agent: [NAME REDACTED].
+Customer: Me acaba de llegar, ¿sí?
+Agent: [NAME REDACTED].
+Customer: Mira, yo no sabía que se descontaban tres pesos y que eran importantes ocho pesos.
+Agent: Uno le haría [NAME REDACTED].
+Customer: No, es que tiene que ser el valor exactamente el mismo.
+Agent: No, no, [NAME REDACTED], te digo, no sabía porque ahí me di cuenta que después abajo según la ley 20.956, me descontaron estos pesos, pero yo no los sabía, si no le habría [NAME REDACTED].
+Customer: No, es que no puede [NAME REDACTED], tiene que ser el mismo valor que yo le indiqué, 16.173.
+Agent: Si tú revisas el vale, dice 16.173, pero abajito dice, según la ley tanto, menos 3.
+Customer: ¿Pero cuánto usted pagó?
+Agent: ¿Pero cuánto usted pagó?
+Customer: 176.173.
+Agent: Y en el vale que te va a llegar ahí está eso.
+Customer: Ok.
+Agent: Dame un momento.
+Customer: Eso ponía yo.
+Agent: Un momentito.
+Customer: Revísale.
+Agent: Revísalo, hermano.
+Customer: Está el cliente, [NAME REDACTED], el código autorizado, la empresa, SACETIPAY CD convenio identificador monto la ley monto total tipo de deuda sus usan en el en el lugar y yo justo me pidió a la [NAME REDACTED] onda y me hizo la palencia porque aquí en Cajones difícil encontrar una casa de cima que te te acepte 50, 60 o 100
+Agent: ¿[NAME REDACTED] pasa?
+Customer: [NAME REDACTED].
+Agent: Gracias
+Customer: Thank you
+Agent: One moment, okay?
+Customer: Yeah.
+Agent: Thank you.
+Customer: Yes, I have it.
+Agent: It just arrived.
+Customer: [NAME REDACTED], [NAME REDACTED]?
+Agent: Yes.
+Customer: Yes, I have everything.
+Agent: [NAME REDACTED], I'm going to register the payment directly.
+Customer: I'm going to let you know once it's visualized.
+Agent: Okay.
+Customer: We're going to register directly on the payment.
+Agent: Okay.
+Customer: So I'll call you when everything's ready.
+Agent: I put what you gave me, and then down below there are discounts on the bill, I didn't know that.
+Customer: Ok, how much did you pay her?
+Agent: $176,000, $173,000.
+Customer: $106,000, $173,000?
+Agent: Yes.
+Customer: There's the money.
+Agent: I sent you the receipt of the house.
+Customer: Okay, okay.
+Agent: Okay.
+Customer: No, because for $3,000, I wouldn't be able to lose everything.
+Agent: Well, that's fine.
+Customer: That's fine.
+Agent: Let me investigate directly and I'll call you, okay?
+Customer: Yes, yes, yes.
+Agent: Yes, I hope so.
+Customer: One moment.",1757078926.92210.mp3
+FINAL,34.11764705882353,76.47058823529412,FAIL,Final average scores,Appearance of distraction or confusion | Lack of resolution | Lack of transparency in communication | Lack of clarity in communication | Inadequate problem-solving | Failure to clearly explain fees and deductions | Inadequate assistance | Failure to address customer's concerns | Unprofessional repetition of customer's question | Lack of personalization | Unclear purpose of the conversation | Financial information disclosure | Insufficient context for financial transactions | Inability to provide a direct solution to the customer's problem | Potential data protection policy violation | Unclear communication | Potential privacy concern discussing large financial transactions | Inability to provide accurate information | Unprofessional language and tone | Data protection policy | Lack of clear communication,Offer a direct solution or alternatives to resolve the issue | Show more empathy towards the customer's concerns | Engage in more empathetic conversation by asking open-ended questions | Use a more professional tone and language | Provide clear explanations of the payment registration process | Review privacy policies regarding financial discussions | Offer a solution or alternative instead of repeating the customer's question | Ensure active listening and empathize with the customer's concerns | Provide more context or details about the conversation to better assess empathy and professionalism. | Provide clear and concise information about fees and deductions | Establish clear context for discussions | Ensure transparency in communication | Provide more context to better understand the customer's issue | Show more empathy towards the customer's needs | Ensure all parties are on the same page before proceeding with transactions | Use more empathetic language to improve customer experience | Use simple and clear language to avoid confusion | Be cautious when handling personal information | Clearly address customer's concerns and provide solutions | Ensure understanding of the payment amount and details before responding | Use more empathetic language to acknowledge customer's emotions | Show more empathy towards the customer by asking about their concerns or needs. | Provide a clear summary of the transaction or service provided. | Provide more detailed explanations and follow-up questions to better understand the customer's needs | Provide more personalized support by addressing the customer by their name and showing understanding of their specific issue. | Maintain a professional tone in the conversation | Consider asking follow-up questions to show more interest and empathy towards the customer. | Provide more detailed information to address customer concerns | Avoid discussing financial transactions without proper authorization and security protocols | Ensure understanding of the customer's issue before responding | Maintain a professional tone and avoid repetitive or unclear questions | Provide direct and clear instructions to customers | Ensure the conversation is related to the intended purpose | Offer clear explanations and solutions to the customer's concerns. | Expand on the conversation to gather more context or provide additional assistance | Ensure all sensitive information is redacted or discussed in a secure manner | Provide clearer resolutions or next steps for the customer's issue | Provide clear and concise information to the customer | Consider adding more empathetic responses to build rapport with the customer | Take ownership of the problem and provide a clear next step or resolution. | Improve active listening skills to better understand customer's needs,,Agent_04,100,Masked 33 Name(s),Audio,"Agent: ¿Cómo está, señor [NAME REDACTED]? ¿Le [NAME REDACTED]?
+Customer: Sí, ya, dime. Le estoy llamando directamente. Ayer no pudo hacer [NAME REDACTED].
+Agent: Ayer sí la hice.
+Customer: Usted [NAME REDACTED], pero no se ha reflejado acá.
+Agent: ¿Ah? ¿Usted [NAME REDACTED]?
+Customer: Sí, lo tengo y lo mandé en la foto.
+Agent: Ok, pero directamente usted [NAME REDACTED] con la que usted trabajó con la señora [NAME REDACTED], ¿no?
+Customer: Sí, sí.
+Agent: Ok, entonces, ¿no se acuerda que conversamos para [NAME REDACTED]?
+Customer: [NAME REDACTED], y ahí te mandé los 106 mil y tanto.
+Agent: Ok, verifique qué cantidad usted envió.
+Customer: por favor dame un segundo dame un segundo un segundo un segundo voy a ponerme los lentes ok así [NAME REDACTED] perdón eh 106.170 pesos no 173 ah señor eran 106.173 correcto correcto pero ahí ahí me descuentan tres pesos según la ley 20.000 y tanto porque yo yo hice el depósito de 106.173 pesos pero después yo le diré el código el código aquí tenemos cliente transacción identificación monto código identificador exacto ese es el código
+Agent: Ok Usted debería colocar el valor exacto, señor. 106173. Por eso es que no se ha reflejado acá.
+Customer: ¿Me puede [NAME REDACTED], por favor?
+Agent: ¿Ah? ¿Me puede usted [NAME REDACTED]?
+Customer: Voy a hacer lo posible por [NAME REDACTED], porque yo soy malo con estas cosas.
+Agent: [NAME REDACTED] correo, por favor.
+Customer: S s ayer te lo mand el que usted hizo en la la noche lo envi S lo envi [NAME REDACTED] a un lado un caballero que me hace un rec y yo no lo puedo hacer Él me [NAME REDACTED].
+Agent: Ayer.
+Customer: Y eso fue temprano, [NAME REDACTED], como a las 6 y media por ahí.
+Agent: Ok. Da un momentito, por favor.
+Customer: A las 6, a las 6 de 9.
+Agent: A las 6 de 9 lo mandé.
+Customer: Ok, denme un momentito, por favor.
+Agent: [NAME REDACTED].
+Customer: Un momento, ¿sí?
+Agent: ¿[NAME REDACTED]?
+Customer: [NAME REDACTED].
+Agent: [NAME REDACTED].
+Customer: Me acaba de llegar, ¿sí?
+Agent: [NAME REDACTED].
+Customer: Mira, yo no sabía que se descontaban tres pesos y que eran importantes ocho pesos.
+Agent: Uno le haría [NAME REDACTED].
+Customer: No, es que tiene que ser el valor exactamente el mismo.
+Agent: No, no, [NAME REDACTED], te digo, no sabía porque ahí me di cuenta que después abajo según la ley 20.956, me descontaron estos pesos, pero yo no los sabía, si no le habría [NAME REDACTED].
+Customer: No, es que no puede [NAME REDACTED], tiene que ser el mismo valor que yo le indiqué, 16.173.
+Agent: Si tú revisas el vale, dice 16.173, pero abajito dice, según la ley tanto, menos 3.
+Customer: ¿Pero cuánto usted pagó?
+Agent: ¿Pero cuánto usted pagó?
+Customer: 176.173.
+Agent: Y en el vale que te va a llegar ahí está eso.
+Customer: Ok.
+Agent: Dame un momento.
+Customer: Eso ponía yo.
+Agent: Un momentito.
+Customer: Revísale.
+Agent: Revísalo, hermano.
+Customer: Está el cliente, [NAME REDACTED], el código autorizado, la empresa, SACETIPAY CD convenio identificador monto la ley monto total tipo de deuda sus usan en el en el lugar y yo justo me pidió a la [NAME REDACTED] onda y me hizo la palencia porque aquí en Cajones difícil encontrar una casa de cima que te te acepte 50, 60 o 100
+Agent: ¿[NAME REDACTED] pasa?
+Customer: [NAME REDACTED].
+Agent: Gracias
+Customer: Thank you
+Agent: One moment, okay?
+Customer: Yeah.
+Agent: Thank you.
+Customer: Yes, I have it.
+Agent: It just arrived.
+Customer: [NAME REDACTED], [NAME REDACTED]?
+Agent: Yes.
+Customer: Yes, I have everything.
+Agent: [NAME REDACTED], I'm going to register the payment directly.
+Customer: I'm going to let you know once it's visualized.
+Agent: Okay.
+Customer: We're going to register directly on the payment.
+Agent: Okay.
+Customer: So I'll call you when everything's ready.
+Agent: I put what you gave me, and then down below there are discounts on the bill, I didn't know that.
+Customer: Ok, how much did you pay her?
+Agent: $176,000, $173,000.
+Customer: $106,000, $173,000?
+Agent: Yes.
+Customer: There's the money.
+Agent: I sent you the receipt of the house.
+Customer: Okay, okay.
+Agent: Okay.
+Customer: No, because for $3,000, I wouldn't be able to lose everything.
+Agent: Well, that's fine.
+Customer: That's fine.
+Agent: Let me investigate directly and I'll call you, okay?
+Customer: Yes, yes, yes.
+Agent: Yes, I hope so.
+Customer: One moment.",1757078926.92210.mp3
