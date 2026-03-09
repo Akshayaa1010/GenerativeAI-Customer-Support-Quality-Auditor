@@ -5,12 +5,8 @@ import spacy
 try:
     nlp = spacy.load("en_core_web_sm")
 except OSError:
-    # Fallback if model is not installed
-    import subprocess
-    import sys
-    subprocess.check_call([sys.executable, "-m", "spacy", "download", "en_core_web_sm"])
-    nlp = spacy.load("en_core_web_sm")
-
+    print("Warning: spaCy model 'en_core_web_sm' not found. Falling back to a blank model for NER.")
+    nlp = spacy.blank("en")
 def redact_pii(text):
     """
     Redacts PII such as names, credit card numbers, and email addresses from the text.
