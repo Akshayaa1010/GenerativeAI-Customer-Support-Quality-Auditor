@@ -1,8 +1,9 @@
 # Use official Playwright image
 FROM mcr.microsoft.com/playwright/python:v1.40.0-jammy
 
-# Prevent python buffering
-ENV PYTHONUNBUFFERED=1
+# Prevent python buffering and bytecode
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1
 
 # Set working directory
 WORKDIR /app
@@ -17,8 +18,8 @@ RUN pip install --no-cache-dir -r requirements.txt && \
 # Copy project files
 COPY . .
 
-# Install Playwright browsers (already includes deps in this image)
+# Ensure chromium is installed
 RUN playwright install chromium
 
-# Start Streamlit using Railway PORT
-CMD streamlit run frontend/dashboard.py --server.port=$PORT --server.address=0.0.0.0
+# Start Streamlit using Railway PORT (using sh -c to expand environment variables)
+CMD ["sh", "-c", "streamlit run frontend/dashboard.py --server.port=${PORT} --server.address=0.0.0.0"]
