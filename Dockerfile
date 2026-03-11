@@ -1,5 +1,5 @@
-# Lightweight Python image
-FROM python:3.10-slim
+# Use official Playwright image
+FROM mcr.microsoft.com/playwright/python:v1.40.0-jammy
 
 # Prevent python buffering
 ENV PYTHONUNBUFFERED=1
@@ -7,25 +7,18 @@ ENV PYTHONUNBUFFERED=1
 # Set working directory
 WORKDIR /app
 
-# Install system dependencies needed for Playwright
-RUN apt-get update && apt-get install -y \
-    curl \
-    wget \
-    gnupg \
-    && rm -rf /var/lib/apt/lists/*
-
 # Copy requirements first (for caching)
 COPY requirements.txt .
 
-# Install Python packages
+# Install Python packages and spacy model
 RUN pip install --no-cache-dir -r requirements.txt && \
     python -m spacy download en_core_web_sm
 
 # Copy project files
 COPY . .
 
-# Install Playwright browsers
-RUN playwright install --with-deps
+# Install Playwright browsers (already includes deps in this image)
+RUN playwright install chromium
 
 # Start Streamlit using Railway PORT
 CMD streamlit run frontend/dashboard.py --server.port=$PORT --server.address=0.0.0.0
