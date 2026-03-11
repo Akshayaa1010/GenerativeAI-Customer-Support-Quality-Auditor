@@ -63,10 +63,17 @@ python backend/upload_policies.py
 
 ## 🖥️ Using the Dashboard
 
-### Launching
+### Launching Locally
 ```bash
 streamlit run frontend/dashboard.py
 ```
+
+### Deployment
+This project is optimized for deployment on **Railway.app** using the provided `Dockerfile`. This ensures that all dependencies, including Playwright for email extraction, are correctly configured.
+
+1. Push your code to GitHub.
+2. Connect your repository to Railway.
+3. Add your environment variables (`GROQ_API_KEY`, `PINECONE_API_KEY`) in the Railway dashboard.
 
 ### Auditing Audio
 1. Enter the agent's name in the sidebar.
