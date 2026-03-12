@@ -121,7 +121,7 @@ def score_email(email_text, agent_name="Unknown Agent", filename=None, **kwargs)
         
     return result
 
-def run_average_audit(file_path, agent_name="Unknown Agent", masking_score=100, masking_analysis="", filename=None):
+def run_average_audit(file_path, agent_name="Unknown Agent", masking_score=100, masking_analysis="", filename=None, redacted_transcript=None):
     if filename is None:
         filename = os.path.basename(file_path)
     # Handle both absolute and relative paths
@@ -130,6 +130,10 @@ def run_average_audit(file_path, agent_name="Unknown Agent", masking_score=100, 
     
     with open(file_path, "r", encoding="utf-8") as f:
         lines = [line.strip() for line in f.readlines() if line.strip().startswith(('Agent:', 'Customer:'))]
+    
+    # Use the redacted transcript if provided, otherwise fall back to joined lines
+    if redacted_transcript is None:
+        redacted_transcript = "\n".join(lines)
 
     # Process in chunks of 5 turns
     chunk_results = []
@@ -198,7 +202,7 @@ def run_average_audit(file_path, agent_name="Unknown Agent", masking_score=100, 
         'masking_score': masking_score,
         'masking_analysis': masking_analysis,
         'Source': 'Audio',
-        'Transcript': "\n".join(lines),
+        'Transcript': redacted_transcript,
         'Filename': filename
     }
     final_df = pd.DataFrame([final_row_data])
@@ -212,7 +216,7 @@ def run_average_audit(file_path, agent_name="Unknown Agent", masking_score=100, 
     df['masking_score'] = masking_score
     df['masking_analysis'] = masking_analysis
     df['Source'] = 'Audio'
-    df['Transcript'] = "\n".join(lines)
+    df['Transcript'] = redacted_transcript
     df['Filename'] = filename
             
     # Standardize chunk df and concat with final

@@ -52,7 +52,8 @@ def run_pipeline(audio_path, agent_name="Unknown Agent", language=None):
             agent_name=agent_name, 
             masking_score=masking_result["masking_score"],
             masking_analysis=masking_result["analysis"],
-            filename=os.path.basename(audio_path)
+            filename=os.path.basename(audio_path),
+            redacted_transcript=masking_result["redacted_text"]
         )
         logger.info(f"Scoring complete for {agent_name}. audit_results.csv updated.")
         

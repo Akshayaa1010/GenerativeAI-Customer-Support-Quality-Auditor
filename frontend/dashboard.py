@@ -1184,7 +1184,13 @@ if df is not None:
                     with st.expander(f"{source_emoji} {row['Source']} Analysis | Outcome: {row['compliance']} {status_emoji}"):
                         st.markdown(f"**Empathy**: {row['empathy']:.1f} | **Professionalism**: {row['professionalism']:.1f}")
                         st.markdown("---")
-                        st.code(row.get('Transcript', 'No transcript available.'), language='text')
+                        raw_transcript = row.get('Transcript', 'No transcript available.')
+                        # Apply live masking at display time as a safety net for historical records
+                        if raw_transcript and raw_transcript != 'No transcript available.':
+                            display_transcript = redact_pii(str(raw_transcript))['redacted_text']
+                        else:
+                            display_transcript = raw_transcript
+                        st.code(display_transcript, language='text')
                         st.markdown("---")
                         st.caption(f"🛡️ {row.get('masking_analysis', 'No PII detected.')}")
     
