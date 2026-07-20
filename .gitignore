@@ -28,23 +28,21 @@ venv/
 .venv
 env/
 
-# IDE
+# IDE & Editor files
 .vscode/
 .idea/
 *.swp
 *.swo
+*.code-workspace
 
 # Environment variables
 .env
 .env.local
+.env.*
 
-# OS
+# OS generated files
 .DS_Store
 Thumbs.db
-
-# Streamlit
-.streamlit/secrets.toml
-.streamlit/cache/
 
 # Jupyter
 .ipynb_checkpoints/
@@ -63,6 +61,10 @@ data/uploads/*
 !data/uploads/.gitkeep
 data/user_data/
 data/audit_results.csv
+data/audit_system.db
+data/users.json
+*.db
+*.sqlite
 
 # Debugging
 repro_error.py

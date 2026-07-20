@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quality Compliance Auditor - Dashboard</title>
+    <script>
+        (function() {
+            const savedTheme = localStorage.getItem('theme') || 'dark';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+        })();
+    </script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- ApexCharts (Premium animated charting) -->
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+    <!-- Marked.js (Markdown parser) -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <!-- CSS stylesheet link -->
+    <link rel="stylesheet" href="/static/css/styles.css">
+</head>
+<body>
+    <div class="app-layout">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">
+                    <i data-lucide="activity" style="width: 22px; height: 22px;"></i>
+                </div>
+                <div>
+                    <h2 class="sidebar-title">Auditor Pro</h2>
+                    <span class="sidebar-subtitle">Compliance Panel</span>
+                </div>
+            </div>
+
+            <nav class="sidebar-nav">
+                <button class="nav-item active" data-target="home-panel">
+                    <i data-lucide="home" class="nav-icon"></i>
+                    <span>Home Dashboard</span>
+                </button>
+                <button class="nav-item" data-target="reports-panel">
+                    <i data-lucide="bar-chart-3" class="nav-icon"></i>
+                    <span>Reports & Analytics</span>
+                </button>
+                <button class="nav-item" data-target="email-panel">
+                    <i data-lucide="mail" class="nav-icon"></i>
+                    <span>Email Auditor</span>
+                </button>
+                <button class="nav-item" data-target="agent-panel">
+                    <i data-lucide="users" class="nav-icon"></i>
+                    <span>Agent Deep-Dive</span>
+                </button>
+            </nav>
+
+            <!-- Audio Upload Widget in Sidebar -->
+            <div class="sidebar-upload">
+                <h3 class="upload-title">
+                    <i data-lucide="mic" style="width: 16px; height: 16px;"></i>
+                    <span>Audit Call Audio</span>
+                </h3>
+                <div class="form-group">
+                    <label class="form-label" for="audioAgent">Agent Name</label>
+                    <input type="text" id="audioAgent" class="form-input" placeholder="e.g. Sarah Jenkins">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="audioLang">Language</label>
+                    <select id="audioLang" class="form-input">
+                        <option value="auto-detect">Auto-detect</option>
+                        <option value="English">English</option>
+                        <option value="Hindi">Hindi</option>
+                        <option value="Spanish">Spanish</option>
+                        <option value="French">French</option>
+                    </select>
+                </div>
+                <div class="file-uploader" id="dropzone">
+                    <i data-lucide="upload-cloud" class="uploader-icon"></i>
+                    <p class="uploader-text">Upload MP3 Conversation</p>
+                    <input type="file" id="audioFile" accept="audio/mp3" style="display: none;">
+                    <span class="file-info-label" id="fileInfoText">No file chosen</span>
+                </div>
+                <button class="action-btn-green" id="processAudioBtn" style="margin-top: 14px; width: 100%;">
+                    <i data-lucide="play" style="width: 16px; height: 16px;"></i>
+                    <span>Process & Score</span>
+                </button>
+
+                <!-- Processing Progress Bar -->
+                <div class="progress-container" id="uploadProgressContainer" style="display: none;">
+                    <div class="progress-header">
+                        <span class="progress-status" id="progressStatusText">Transcribing...</span>
+                        <span class="progress-percent" id="progressPercentText">0%</span>
+                    </div>
+                    <div class="progress-bar-bg">
+                        <div class="progress-bar-fill" id="progressBarFill" style="width: 0%;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sidebar User Profile Footer -->
+            <div class="sidebar-footer">
+                <div class="user-profile">
+                    <div class="user-avatar">{{ initials }}</div>
+                    <div class="user-details">
+                        <span class="user-name" title="{{ username }}">{{ username }}</span>
+                        <span class="user-role" title="{{ organization }}">{{ organization }}</span>
+                    </div>
+                </div>
+                <a href="/logout" class="logout-btn" title="Sign Out">
+                    <i data-lucide="log-out" style="width: 18px; height: 18px;"></i>
+                </a>
+            </div>
+        </aside>
+
+        <!-- Main Workspace Area -->
+        <main class="main-content">
+            <!-- Header Section -->
+            <header class="header">
+                <div>
+                    <h1 class="header-title" id="panel-title-text">Home Dashboard</h1>
+                    <p class="header-subtitle" id="panel-subtitle-text">Quality & compliance metrics aggregates</p>
+                </div>
+                <div class="header-actions">
+                    <button class="header-badge" id="themeToggleBtn" title="Toggle Theme" style="cursor: pointer; background: var(--card-bg); border: 1px solid var(--border-color); color: var(--text-main); font-family: inherit;">
+                        <i data-lucide="sun" id="themeIcon" style="width: 16px; height: 16px; color: var(--primary);"></i>
+                        <span>Theme</span>
+                    </button>
+                    <div class="header-badge">
+                        <i data-lucide="calendar" style="width: 16px; height: 16px; color: var(--primary);"></i>
+                        <span id="header-date-text">July 19, 2026</span>
+                    </div>
+                    <div class="header-badge status-online">
+                        <div class="online-indicator"></div>
+                        <span>Auditor Sync Active</span>
+                    </div>
+                </div>
+            </header>
+
+            <!-- ================= HOME DASHBOARD PANEL ================= -->
+            <section class="content-panel active" id="home-panel">
+                <!-- Team Metrics Top Summary Row -->
+                <div class="metrics-grid">
+                    <div class="metric-card bg-empathy">
+                        <span class="metric-lbl">Team Empathy Average</span>
+                        <h2 class="metric-val" id="teamEmpathyVal">0.0</h2>
+                        <p class="metric-meta">Out of 100 points</p>
+                    </div>
+                    <div class="metric-card bg-professionalism">
+                        <span class="metric-lbl">Team Professionalism Average</span>
+                        <h2 class="metric-val" id="teamProfessionalismVal">0.0</h2>
+                        <p class="metric-meta">Out of 100 points</p>
+                    </div>
+                    <div class="metric-card bg-conversations">
+                        <span class="metric-lbl">Audited Interactions</span>
+                        <h2 class="metric-val" id="teamAuditsVal">0</h2>
+                        <p class="metric-meta">Total audio & email logs</p>
+                    </div>
+                </div>
+
+                <div class="grid-2-1">
+                    <!-- Agent-Wise Performance Comparison Graph -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Agent Quality Comparison</h3>
+                            <p class="card-subtitle">Comparing empathy and professionalism averages per agent</p>
+                        </div>
+                        <div class="card-body" style="position: relative; min-height: 380px;">
+                            <div id="agentCompareChart"></div>
+                        </div>
+                    </div>
+
+                    <!-- Portfolio Violations List -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Top Portfolio Violations</h3>
+                            <p class="card-subtitle">Most frequent non-compliance issues</p>
+                        </div>
+                        <div class="card-body">
+                            <div class="violations-alert-list" id="globalViolationsList">
+                                <div class="no-data-msg">Loading violations logs...</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Audits Table -->
+                <div class="card" style="margin-top: 24px;">
+                    <div class="card-header flex-header">
+                        <div>
+                            <h3 class="card-title">Recent Agent Performance Summary</h3>
+                            <p class="card-subtitle">Most recent audits completed for agents</p>
+                        </div>
+                    </div>
+                    <div class="card-body table-responsive">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Agent</th>
+                                    <th>Empathy Score</th>
+                                    <th>Professionalism Score</th>
+                                    <th>Source Type</th>
+                                    <th>Compliance Outcome</th>
+                                </tr>
+                            </thead>
+                            <tbody id="recentAuditsTableBody">
+                                <tr>
+                                    <td colspan="5" style="text-align: center; color: var(--text-muted);">Loading audit history...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ================= REPORTS & ANALYTICS PANEL ================= -->
+            <section class="content-panel" id="reports-panel">
+                <div class="grid-2-1">
+                    <!-- Leaderboard Scatter Plot -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Performance Leaderboard</h3>
+                            <p class="card-subtitle">Categorizing agents based on Empathy (X) vs Professionalism (Y)</p>
+                        </div>
+                        <div class="card-body">
+                            <div id="leaderboardScatterChart"></div>
+                        </div>
+                    </div>
+
+                    <!-- Classification List & Stats -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Classification Legend & Actions</h3>
+                            <p class="card-subtitle">Active workforce classification statistics</p>
+                        </div>
+                        <div class="card-body">
+                            <div class="legend-list">
+                                <div class="legend-item border-star">
+                                    <div class="legend-badge badge-star">⭐ Stars</div>
+                                    <div class="legend-content">
+                                        <span class="legend-count" id="starsCount">0 Agents</span>
+                                        <p class="legend-desc">E >= 70, P >= 70. Action: Promote / Reward</p>
+                                    </div>
+                                </div>
+                                <div class="legend-item border-robot">
+                                    <div class="legend-badge badge-robot">🤖 Robots</div>
+                                    <div class="legend-content">
+                                        <span class="legend-count" id="robotsCount">0 Agents</span>
+                                        <p class="legend-desc">E < 70, P >= 70. Action: Soft-Skills Coaching</p>
+                                    </div>
+                                </div>
+                                <div class="legend-item border-charmer">
+                                    <div class="legend-badge badge-charmer">✨ Charmers</div>
+                                    <div class="legend-content">
+                                        <span class="legend-count" id="charmersCount">0 Agents</span>
+                                        <p class="legend-desc">E >= 70, P < 70. Action: Process Training</p>
+                                    </div>
+                                </div>
+                                <div class="legend-item border-risk">
+                                    <div class="legend-badge badge-risk">⚠️ Risks</div>
+                                    <div class="legend-content">
+                                        <span class="legend-count" id="risksCount">0 Agents</span>
+                                        <p class="legend-desc">E < 70, P < 70. Action: Immediate Training Intervention</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- AI Coaching Roadmap -->
+                <div class="card" style="margin-top: 24px;">
+                    <div class="card-header flex-header">
+                        <div>
+                            <h3 class="card-title">🎯 AI-Driven Coaching Roadmap</h3>
+                            <p class="card-subtitle">Clustered improvement suggestions and actionable modules</p>
+                        </div>
+                        <div class="header-btn-row">
+                            <button class="action-btn-blue" id="generateRoadmapBtn">
+                                <i data-lucide="sparkles" style="width: 16px; height: 16px;"></i>
+                                <span>Generate/Refresh Roadmap</span>
+                            </button>
+                            <button class="action-btn-outline" id="downloadRoadmapPdfBtn" style="display: none;">
+                                <i data-lucide="download" style="width: 16px; height: 16px;"></i>
+                                <span>Download PDF</span>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="roadmap-loading" id="roadmapLoading" style="display: none;">
+                            <div class="spinner"></div>
+                            <p style="margin-top: 12px; color: var(--text-muted);">AI is clustering team compliance gaps and creating actionable modules...</p>
+                        </div>
+                        <div class="coaching-roadmap-content markdown-body" id="coachingRoadmapContent">
+                            <div class="no-data-msg">Click "Generate/Refresh Roadmap" to synthesize portfolio logs into a training blueprint.</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Data & Reports Downloads -->
+                <div class="card" style="margin-top: 24px;">
+                    <div class="card-header">
+                        <h3 class="card-title">📥 Data & Reports Downloads</h3>
+                        <p class="card-subtitle">Export underlying audits data and executive sheets</p>
+                    </div>
+                    <div class="card-body">
+                        <div class="downloads-grid">
+                            <a href="/api/download-csv" class="download-card">
+                                <div class="download-icon-box">
+                                    <i data-lucide="file-spreadsheet" style="width: 28px; height: 28px; color: #3fb950;"></i>
+                                </div>
+                                <div class="download-card-details">
+                                    <span class="download-title">Raw Audit Records (CSV)</span>
+                                    <p class="download-desc">Contains individual transcripts, masking stats, and evaluation scores.</p>
+                                </div>
+                            </a>
+                            <button class="download-card" id="downloadSummaryPdfBtn">
+                                <div class="download-icon-box">
+                                    <i data-lucide="file-text" style="width: 28px; height: 28px; color: #58a6ff;"></i>
+                                </div>
+                                <div class="download-card-details" style="text-align: left;">
+                                    <span class="download-title">Team Performance Summary (PDF)</span>
+                                    <p class="download-desc">Export high-level agent average scores and pass/fail states report.</p>
+                                </div>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ================= EMAIL QUALITY AUDITOR PANEL ================= -->
+            <section class="content-panel" id="email-panel">
+                <div class="grid-2-1">
+                    <!-- Email Configuration & Inputs -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Auditor Workspace</h3>
+                            <p class="card-subtitle">Analyze emails for compliance and quality</p>
+                        </div>
+                        <div class="card-body">
+                            <!-- Agent assign selection -->
+                            <div class="form-group" style="margin-bottom: 20px;">
+                                <label class="form-label" for="emailAgentSelect">Assign Audit to Agent</label>
+                                <select id="emailAgentSelect" class="form-input">
+                                    <!-- Populated dynamically -->
+                                </select>
+                                <input type="text" id="emailAgentInput" class="form-input" placeholder="Enter new agent name..." style="display: none; margin-top: 10px;">
+                            </div>
+
+                            <!-- Tabs for Dynamic Browser Sync / Manual Paste -->
+                            <div class="tab-container" style="margin-top: 24px;">
+                                <div class="tab-header">
+                                    <button class="sub-tab active" data-sub="imap-tab">
+                                        <i data-lucide="download-cloud" style="width: 14px; height: 14px;"></i>
+                                        <span>IMAP Email Extractor</span>
+                                    </button>
+                                    <button class="sub-tab" data-sub="manual-tab">
+                                        <i data-lucide="clipboard" style="width: 14px; height: 14px;"></i>
+                                        <span>Manual paste</span>
+                                    </button>
+                                </div>
+
+                                <div class="tab-body active" id="imap-tab">
+                                    <p class="tab-description">Directly extract and analyze email logs from customer service mailboxes.</p>
+                                    
+                                    <div class="grid-2-col" style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px;">
+                                        <div class="form-group">
+                                            <label class="form-label" for="imapServer">IMAP Server</label>
+                                            <input type="text" id="imapServer" class="form-input" placeholder="imap.gmail.com">
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="form-label" for="imapPort">Port</label>
+                                            <input type="text" id="imapPort" class="form-input" placeholder="993">
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label" for="imapEmail">Email Username</label>
+                                        <input type="email" id="imapEmail" class="form-input" placeholder="support@company.com">
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label" for="imapPassword">Password / App Password</label>
+                                        <input type="password" id="imapPassword" class="form-input" placeholder="••••••••••••••••">
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label" for="imapFolder">Mail Folder</label>
+                                        <input type="text" id="imapFolder" class="form-input" value="INBOX">
+                                    </div>
+
+                                    <button class="action-btn-green" id="fetchEmailBtn" style="margin-top: 14px; width: 100%;">
+                                        <i data-lucide="refresh-cw" style="width: 16px; height: 16px;"></i>
+                                        <span>Fetch & Audit Latest Email</span>
+                                    </button>
+                                </div>
+
+                                <div class="tab-body" id="manual-tab">
+                                    <p class="tab-description">Paste the complete email thread context manually to generate compliance results.</p>
+                                    <div class="form-group">
+                                        <label class="form-label" for="pastedEmailContent">Email Thread Context</label>
+                                        <textarea id="pastedEmailContent" class="form-input" style="height: 240px; font-family: monospace;" placeholder="Subject: Refund Request&#10;From: customer@example.com&#10;Agent: Hello, let me help you..."></textarea>
+                                    </div>
+                                    <button class="action-btn-green" id="scoreManualEmailBtn" style="margin-top: 14px; width: 100%;">
+                                        <i data-lucide="award" style="width: 16px; height: 16px;"></i>
+                                        <span>Run Compliance Audit</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Email Analysis Results -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Assessment Results</h3>
+                            <p class="card-subtitle">Scoring and violation logs for email audits</p>
+                        </div>
+                        <div class="card-body">
+                            <div class="email-results-loading" id="emailResultsLoading" style="display: none;">
+                                <div class="spinner"></div>
+                                <p style="margin-top: 12px; color: var(--text-muted);">AI is evaluating quality guidelines and indexing violations...</p>
+                            </div>
+                            <div class="email-results-display" id="emailResultsDisplay" style="display: none;">
+                                <div class="metrics-grid" style="margin-bottom: 24px;">
+                                    <div class="result-metric-card" id="emailEmpathyCard">
+                                        <span class="result-lbl">Empathy</span>
+                                        <h3 class="result-val" id="emailEmpathyVal">0/100</h3>
+                                    </div>
+                                    <div class="result-metric-card" id="emailProfessionalismCard">
+                                        <span class="result-lbl">Professionalism</span>
+                                        <h3 class="result-val" id="emailProfessionalismVal">0/100</h3>
+                                    </div>
+                                    <div class="result-metric-card" id="emailOutcomeCard">
+                                        <span class="result-lbl">Compliance</span>
+                                        <h3 class="result-val" id="emailOutcomeVal">PENDING</h3>
+                                    </div>
+                                </div>
+
+                                <div class="results-reason-box" style="margin-bottom: 24px;">
+                                    <strong style="color: var(--primary);">Assessment Reason:</strong>
+                                    <p id="emailReasonText" style="margin-top: 6px; font-size: 14px; line-height: 1.5;"></p>
+                                </div>
+
+                                <div class="grid-2-col" style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                                    <div class="results-block">
+                                        <h4 class="results-block-title text-error">
+                                            <i data-lucide="alert-triangle" style="width: 16px; height: 16px;"></i>
+                                            <span>Violations Detected</span>
+                                        </h4>
+                                        <ul class="results-bullet-list" id="emailViolationsList">
+                                            <li>None</li>
+                                        </ul>
+                                    </div>
+                                    <div class="results-block">
+                                        <h4 class="results-block-title text-success">
+                                            <i data-lucide="check-circle" style="width: 16px; height: 16px;"></i>
+                                            <span>Coaching Suggestions</span>
+                                        </h4>
+                                        <ul class="results-bullet-list" id="emailSuggestionsList">
+                                            <li>None</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="no-data-msg" id="emailNoDataMsg">
+                                Select an agent and configure email input workspace to run compliance audit logs.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ================= AGENT DEEP-DIVE ANALYSIS PANEL ================= -->
+            <section class="content-panel" id="agent-panel">
+                <!-- Selector row -->
+                <div class="card" style="margin-bottom: 24px;">
+                    <div class="card-body flex-header" style="padding: 16px 24px;">
+                        <h4 class="card-title" style="margin-bottom: 0;">Perform Agent Deep-Dive</h4>
+                        <div class="form-group" style="margin-bottom: 0; min-width: 280px; display: flex; align-items: center; gap: 12px;">
+                            <label class="form-label" style="margin-bottom: 0; white-space: nowrap;" for="agentSelectDropdown">Select Agent:</label>
+                            <select id="agentSelectDropdown" class="form-input">
+                                <!-- Populated dynamically -->
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="agentDeepDiveContainer" style="display: none;">
+                    <!-- Highlight metrics boxes (Pastel theme styled) -->
+                    <div class="agent-metrics-grid">
+                        <div class="metric-container pastel-blue">
+                            <span class="metric-title">Overall Empathy</span>
+                            <div class="metric-value" id="agentAvgEmpathy">0.0</div>
+                        </div>
+                        <div class="metric-container pastel-green">
+                            <span class="metric-title">Professionalism</span>
+                            <div class="metric-value" id="agentAvgProf">0.0</div>
+                        </div>
+                        <div class="metric-container" id="agentComplianceStatusContainer">
+                            <span class="metric-title">Compliance</span>
+                            <div class="metric-value" id="agentComplianceStatus">PENDING</div>
+                        </div>
+                        <div class="metric-container pastel-purple">
+                            <span class="metric-title">Total PII Masked</span>
+                            <div class="metric-value" id="agentTotalMasking">0</div>
+                        </div>
+                        <div class="metric-container pastel-orange">
+                            <span class="metric-title">Conversations</span>
+                            <div class="metric-value" id="agentTotalConvos">0</div>
+                            <div class="metric-sub" id="agentSourceBreakdown">Audio: 0 | Email: 0</div>
+                        </div>
+                    </div>
+
+                    <div class="grid-2-1" style="margin-top: 24px;">
+                        <!-- Violations top 5 -->
+                        <div class="card">
+                            <div class="card-header">
+                                <h3 class="card-title text-error">🚨 Major Violations Registered</h3>
+                                <p class="card-subtitle">Top policy breaches logged for this agent</p>
+                            </div>
+                            <div class="card-body">
+                                <ul class="agent-top5-list text-error" id="agentViolationsList">
+                                    <li>No violations recorded.</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <!-- Suggestions top 5 -->
+                        <div class="card">
+                            <div class="card-header">
+                                <h3 class="card-title text-success">💡 Core Coaching Actions</h3>
+                                <p class="card-subtitle">Specific guidelines to focus on</p>
+                            </div>
+                            <div class="card-body">
+                                <ul class="agent-top5-list text-success" id="agentSuggestionsList">
+                                    <li>No suggestions recorded.</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Redacted Conversation History Accordions -->
+                    <div class="card" style="margin-top: 24px;">
+                        <div class="card-header">
+                            <h3 class="card-title">📜 Masked Conversation History</h3>
+                            <p class="card-subtitle">Browse audits details and PII compliance logs</p>
+                        </div>
+                        <div class="card-body">
+                            <div class="history-accordion-list" id="agentHistoryAccordionList">
+                                <!-- Populated dynamically -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="no-data-msg" id="agentNoDataMsg">
+                    Please upload auditable records first or select an agent in the dropdown to view deep-dive analytics.
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- JS code link -->
+    <script src="/static/js/app.js"></script>
+</body>
+</html>

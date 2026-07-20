@@ -1,25 +1,37 @@
+# Version Control & Git
 .git
 .gitignore
-.env
-venv
-__pycache__
+.dockerignore
+
+# Virtual Environment & Python Caches
+venv/
+.venv/
+env/
+__pycache__/
 *.pyc
 *.pyo
 *.pyd
+backend/__pycache__/
+frontend/__pycache__/
 
+# Environment Variables & Local Configs
+.env
+.env.*
+*.code-workspace
+.vscode/
+.idea/
+
+# Jupyter & Notebook Checkpoints
 .ipynb_checkpoints
 *.ipynb
+
+# Local Logs & Data Files
 *.log
+data/user_data/*
+data/uploads/*
+data/audit_results.csv
+data/audit_system.db
 
-data/user_data
-data/uploads
-audit_results.csv
-
-.streamlit/
-
-backend/__pycache__
-frontend/__pycache__
-
-node_modules
-dist
-build
+# OS System Files
+.DS_Store
+Thumbs.db

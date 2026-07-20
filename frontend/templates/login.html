@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quality Compliance Auditor - Login</title>
+    <script>
+        (function() {
+            const savedTheme = localStorage.getItem('theme') || 'dark';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+        })();
+    </script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        :root {
+            --bg-color: #080b11;
+            --card-bg: rgba(22, 27, 38, 0.7);
+            --border-color: rgba(255, 255, 255, 0.08);
+            --primary: #58a6ff;
+            --primary-glow: rgba(88, 166, 255, 0.4);
+            --text-main: #f0f3f6;
+            --text-muted: #8b949e;
+            --error: #f85149;
+            --input-bg: rgba(8, 11, 17, 0.6);
+            --card-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+        }
+
+        [data-theme="light"] {
+            --bg-color: #f6f8fa;
+            --card-bg: rgba(255, 255, 255, 0.95);
+            --border-color: rgba(31, 35, 40, 0.15);
+            --primary: #0969da;
+            --primary-glow: rgba(9, 105, 218, 0.2);
+            --text-main: #1f2328;
+            --text-muted: #57606a;
+            --error: #cf222e;
+            --input-bg: #ffffff;
+            --card-shadow: 0 20px 40px rgba(140, 149, 159, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.5);
+        }
+
+        /* Floating Theme Toggle Button */
+        .theme-toggle-btn {
+            position: absolute;
+            top: 24px;
+            right: 24px;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            padding: 10px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: var(--card-shadow);
+            z-index: 1000;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            width: 40px;
+            height: 40px;
+        }
+        .theme-toggle-btn:hover {
+            transform: scale(1.05);
+            background: var(--border-color);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Animated background gradient */
+        .bg-gradient {
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle at 30% 30%, rgba(88, 166, 255, 0.12) 0%, transparent 40%),
+                        radial-gradient(circle at 70% 70%, rgba(139, 92, 246, 0.08) 0%, transparent 45%);
+            animation: rotateBg 25s infinite linear;
+            z-index: 1;
+        }
+
+        @keyframes rotateBg {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .login-container {
+            position: relative;
+            z-index: 10;
+            width: 100%;
+            max-width: 440px;
+            padding: 24px;
+        }
+
+        .login-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: var(--card-shadow);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .brand-header {
+            text-align: center;
+            margin-bottom: 36px;
+        }
+
+        .brand-logo {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 56px;
+            height: 56px;
+            background: linear-gradient(135deg, var(--primary), #a2d2ff);
+            border-radius: 14px;
+            color: #0c0f16;
+            margin-bottom: 16px;
+            box-shadow: 0 0 20px rgba(88, 166, 255, 0.3);
+        }
+
+        .brand-title {
+            font-size: 24px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            background: linear-gradient(to right, #ffffff, #c9d1d9);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 6px;
+        }
+
+        .brand-subtitle {
+            font-size: 14px;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .form-group {
+            margin-bottom: 24px;
+            position: relative;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .input-icon {
+            position: absolute;
+            left: 14px;
+            color: var(--text-muted);
+            pointer-events: none;
+            width: 18px;
+            height: 18px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 14px 14px 14px 44px;
+            background: var(--input-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            color: var(--text-main);
+            font-family: inherit;
+            font-size: 15px;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px var(--primary-glow);
+            background: var(--input-bg);
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, var(--primary), #488bd6);
+            border: none;
+            border-radius: 12px;
+            color: #0c0f16;
+            font-family: inherit;
+            font-weight: 700;
+            font-size: 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 12px rgba(88, 166, 255, 0.2);
+            margin-top: 12px;
+        }
+
+        .login-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(88, 166, 255, 0.4);
+            filter: brightness(1.1);
+        }
+
+        .login-btn:active {
+            transform: translateY(1px);
+        }
+
+        .error-message {
+            background-color: rgba(248, 81, 73, 0.1);
+            border: 1px solid rgba(248, 81, 73, 0.2);
+            padding: 12px 16px;
+            border-radius: 10px;
+            color: var(--error);
+            font-size: 13.5px;
+            font-weight: 600;
+            margin-bottom: 24px;
+            display: none;
+            align-items: center;
+            gap: 8px;
+            animation: shake 0.4s ease-in-out;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-6px); }
+            40%, 80% { transform: translateX(6px); }
+        }
+
+        .success-message {
+            background-color: rgba(63, 185, 80, 0.1);
+            border: 1px solid rgba(63, 185, 80, 0.2);
+            padding: 12px 16px;
+            border-radius: 10px;
+            color: #3fb950;
+            font-size: 13.5px;
+            font-weight: 600;
+            margin-bottom: 24px;
+            display: none;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .toggle-link-container {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .toggle-link {
+            color: var(--primary);
+            font-size: 14px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.2s;
+            cursor: pointer;
+        }
+
+        .toggle-link:hover {
+            color: #a2d2ff;
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-gradient"></div>
+    <button id="themeToggleBtn" class="theme-toggle-btn" title="Toggle Theme">
+        <i data-lucide="sun" id="themeIcon" style="width: 20px; height: 20px;"></i>
+    </button>
+
+    <div class="login-container">
+        <div class="login-card">
+            <!-- Brand Header for Login -->
+            <div id="loginHeader" class="brand-header">
+                <div class="brand-logo">
+                    <i data-lucide="shield-check" style="width: 28px; height: 28px;"></i>
+                </div>
+                <h1 class="brand-title">Compliance Audit</h1>
+                <p class="brand-subtitle">Sign in to quality assessment panel</p>
+            </div>
+
+            <!-- Brand Header for Register -->
+            <div id="registerHeader" class="brand-header" style="display: none;">
+                <div class="brand-logo">
+                    <i data-lucide="user-plus" style="width: 28px; height: 28px;"></i>
+                </div>
+                <h1 class="brand-title">Create Account</h1>
+                <p class="brand-subtitle">Register to process auditable records</p>
+            </div>
+
+            <!-- Error/Success messages -->
+            <div id="errorMessage" class="error-message">
+                <i data-lucide="alert-circle" style="width: 18px; height: 18px; flex-shrink: 0;"></i>
+                <span id="errorText">Invalid username or password</span>
+            </div>
+
+            <div id="successMessage" class="success-message">
+                <i data-lucide="check-circle" style="width: 18px; height: 18px; flex-shrink: 0;"></i>
+                <span id="successText">Account created successfully!</span>
+            </div>
+
+            <!-- Login Form -->
+            <form id="loginForm" method="POST" action="/login">
+                <div class="form-group">
+                    <label class="form-label" for="username">Username</label>
+                    <div class="input-wrapper">
+                        <i data-lucide="user" class="input-icon"></i>
+                        <input class="form-input" type="text" id="username" name="username" placeholder="Enter username" required autocomplete="username">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="password">Password</label>
+                    <div class="input-wrapper">
+                        <i data-lucide="lock" class="input-icon"></i>
+                        <input class="form-input" type="password" id="password" name="password" placeholder="Enter password" required autocomplete="current-password">
+                    </div>
+                </div>
+
+                <button class="login-btn" type="submit">
+                    <span>Sign In</span>
+                    <i data-lucide="arrow-right" style="width: 18px; height: 18px;"></i>
+                </button>
+
+                <div class="toggle-link-container">
+                    <a class="toggle-link" id="showRegisterLink">Create an account</a>
+                </div>
+            </form>
+
+            <!-- Register Form -->
+            <form id="registerForm" style="display: none;">
+                <div class="form-group">
+                    <label class="form-label" for="regUsername">Username</label>
+                    <div class="input-wrapper">
+                        <i data-lucide="user" class="input-icon"></i>
+                        <input class="form-input" type="text" id="regUsername" name="username" placeholder="Choose a username" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="regPassword">Password</label>
+                    <div class="input-wrapper">
+                        <i data-lucide="lock" class="input-icon"></i>
+                        <input class="form-input" type="password" id="regPassword" name="password" placeholder="Choose a password (min 6 characters)" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="organization">Organization Name</label>
+                    <div class="input-wrapper">
+                        <i data-lucide="building" class="input-icon"></i>
+                        <input class="form-input" type="text" id="organization" name="organization" placeholder="Your Organization Name" required>
+                    </div>
+                </div>
+
+                <button class="login-btn" type="submit" id="registerBtn">
+                    <span>Create Account</span>
+                    <i data-lucide="user-plus" style="width: 18px; height: 18px;"></i>
+                </button>
+
+                <div class="toggle-link-container">
+                    <a class="toggle-link" id="showLoginLink">Already have an account? Sign In</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Initialize Lucide icons
+        lucide.createIcons();
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+
+        const loginForm = document.getElementById('loginForm');
+        const registerForm = document.getElementById('registerForm');
+        const loginHeader = document.getElementById('loginHeader');
+        const registerHeader = document.getElementById('registerHeader');
+        const errDiv = document.getElementById('errorMessage');
+        const errText = document.getElementById('errorText');
+        const succDiv = document.getElementById('successMessage');
+        const succText = document.getElementById('successText');
+        const showRegisterLink = document.getElementById('showRegisterLink');
+        const showLoginLink = document.getElementById('showLoginLink');
+        const registerBtn = document.getElementById('registerBtn');
+
+        // Toggle to registration view
+        showRegisterLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            errDiv.style.display = 'none';
+            succDiv.style.display = 'none';
+            loginForm.style.display = 'none';
+            loginHeader.style.display = 'none';
+            registerForm.style.display = 'block';
+            registerHeader.style.display = 'block';
+            lucide.createIcons();
+        });
+
+        // Toggle to login view
+        showLoginLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            errDiv.style.display = 'none';
+            succDiv.style.display = 'none';
+            registerForm.style.display = 'none';
+            registerHeader.style.display = 'none';
+            loginForm.style.display = 'block';
+            loginHeader.style.display = 'block';
+            lucide.createIcons();
+        });
+
+        // Handle AJAX Registration
+        registerForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            errDiv.style.display = 'none';
+            succDiv.style.display = 'none';
+
+            const username = document.getElementById('regUsername').value;
+            const password = document.getElementById('regPassword').value;
+            const organization = document.getElementById('organization').value;
+
+            registerBtn.disabled = true;
+            registerBtn.style.opacity = '0.7';
+
+            fetch('/register', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ username, password, organization })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    succText.textContent = data.message + " Redirecting...";
+                    succDiv.style.display = 'flex';
+                    setTimeout(() => {
+                        window.location.href = '/dashboard';
+                    }, 1500);
+                } else {
+                    errText.textContent = data.error || "Failed to register";
+                    errDiv.style.display = 'flex';
+                    registerBtn.disabled = false;
+                    registerBtn.style.opacity = '1';
+                }
+            })
+            .catch(err => {
+                errText.textContent = "An error occurred. Please try again.";
+                errDiv.style.display = 'flex';
+                registerBtn.disabled = false;
+                registerBtn.style.opacity = '1';
+            });
+        });
+
+        // Handle error parameter from backend for login
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.has('error')) {
+            errDiv.style.display = 'flex';
+        }
+
+        // Theme toggler script
+        const themeToggleBtn = document.getElementById('themeToggleBtn');
+        const themeIcon = document.getElementById('themeIcon');
+        
+        function updateThemeIcon(theme) {
+            if (theme === 'light') {
+                themeIcon.setAttribute('data-lucide', 'moon');
+            } else {
+                themeIcon.setAttribute('data-lucide', 'sun');
+            }
+            lucide.createIcons();
+        }
+
+        // Initial icon setup
+        updateThemeIcon(savedTheme);
+
+        themeToggleBtn.addEventListener('click', () => {
+            const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+            const targetTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', targetTheme);
+            localStorage.setItem('theme', targetTheme);
+            updateThemeIcon(targetTheme);
+        });
+    </script>
+</body>
+</html>

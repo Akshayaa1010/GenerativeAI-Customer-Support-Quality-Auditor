@@ -40,7 +40,7 @@ def score_chunk(chunk_text):
     )
     return json.loads(response.choices[0].message.content)
 
-def score_email(email_text, agent_name="Unknown Agent", filename=None, **kwargs):
+def score_email(email_text, agent_name="Unknown Agent", filename=None, organization="Default", **kwargs):
     print(f"DEBUG: score_email called with filename={filename}")
     if filename is None:
         from datetime import datetime
@@ -79,7 +79,7 @@ def score_email(email_text, agent_name="Unknown Agent", filename=None, **kwargs)
     
     # Save to CSV
     csv_path = os.path.join(PROJECT_ROOT, "data", "audit_results.csv")
-    column_order = ['Chunk', 'empathy', 'professionalism', 'compliance', 'reason', 'violations', 'suggestions', 'evaluation', 'Agent', 'masking_score', 'masking_analysis', 'Source', 'Transcript', 'Filename']
+    column_order = ['Chunk', 'empathy', 'professionalism', 'compliance', 'reason', 'violations', 'suggestions', 'evaluation', 'Agent', 'masking_score', 'masking_analysis', 'Source', 'Transcript', 'Filename', 'Organization']
     
     new_row = {
         'Chunk': 'EMAIL', # Identifying this as an email audit
@@ -95,7 +95,8 @@ def score_email(email_text, agent_name="Unknown Agent", filename=None, **kwargs)
         'masking_score': masking_result['masking_score'],
         'masking_analysis': masking_result['analysis'],
         'Transcript': masking_result['redacted_text'],
-        'Filename': filename
+        'Filename': filename,
+        'Organization': organization
     }
     
     # Append to cumulative results
@@ -121,7 +122,7 @@ def score_email(email_text, agent_name="Unknown Agent", filename=None, **kwargs)
         
     return result
 
-def run_average_audit(file_path, agent_name="Unknown Agent", masking_score=100, masking_analysis="", filename=None, redacted_transcript=None):
+def run_average_audit(file_path, agent_name="Unknown Agent", masking_score=100, masking_analysis="", filename=None, redacted_transcript=None, organization="Default"):
     if filename is None:
         filename = os.path.basename(file_path)
     # Handle both absolute and relative paths
@@ -186,7 +187,7 @@ def run_average_audit(file_path, agent_name="Unknown Agent", masking_score=100, 
     all_suggestions = list(set([s for s in all_suggestions if s]))
     
     # Reorder columns before saving
-    column_order = ['Chunk', 'empathy', 'professionalism', 'compliance', 'reason', 'violations', 'suggestions', 'evaluation', 'Agent', 'masking_score', 'masking_analysis', 'Source', 'Transcript', 'Filename']
+    column_order = ['Chunk', 'empathy', 'professionalism', 'compliance', 'reason', 'violations', 'suggestions', 'evaluation', 'Agent', 'masking_score', 'masking_analysis', 'Source', 'Transcript', 'Filename', 'Organization']
     
     # Create final results row
     final_row_data = {
@@ -203,7 +204,8 @@ def run_average_audit(file_path, agent_name="Unknown Agent", masking_score=100, 
         'masking_analysis': masking_analysis,
         'Source': 'Audio',
         'Transcript': redacted_transcript,
-        'Filename': filename
+        'Filename': filename,
+        'Organization': organization
     }
     final_df = pd.DataFrame([final_row_data])
     
@@ -218,6 +220,7 @@ def run_average_audit(file_path, agent_name="Unknown Agent", masking_score=100, 
     df['Source'] = 'Audio'
     df['Transcript'] = redacted_transcript
     df['Filename'] = filename
+    df['Organization'] = organization
             
     # Standardize chunk df and concat with final
     df = pd.concat([df[column_order], final_df[column_order]], ignore_index=True)

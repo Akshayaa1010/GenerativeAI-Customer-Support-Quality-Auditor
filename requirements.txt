@@ -1,25 +1,24 @@
-streamlit==1.33.0
-plotly==5.17.0
-pandas>=2.2.0
-groq>=0.4.0
+# Core Web Framework & Server
+Flask>=3.0.0
+gunicorn>=21.2.0
 python-dotenv>=1.0.0
 
+# AI Models & LLM Integration
+groq>=0.4.0
 pinecone>=3.2.2
 langchain>=0.1.20
 langchain-community>=0.0.20
 langchain-pinecone>=0.1.1
-
-sentence-transformers>=2.6.0
-huggingface-hub>=0.20.0
-
-numpy>=1.26.0
-requests>=2.31.0
-
-playwright>=1.40.0
-playwright-stealth>=1.0.6
-
-fpdf2>=2.7.0
 spacy>=3.7.0
 
+# Data Processing & Analytics
+pandas>=2.2.0
+numpy>=1.26.0
+plotly>=5.17.0
+
+# HTML Parsing & Utilities
+beautifulsoup4>=4.12.0
+requests>=2.31.0
+fpdf2>=2.7.0
 rich>=13.7.0
 markdown-it-py>=3.0.0

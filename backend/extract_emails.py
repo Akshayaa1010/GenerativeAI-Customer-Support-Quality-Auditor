@@ -1,92 +1,152 @@
 import sys
 import os
 import json
-from playwright.sync_api import sync_playwright
-from playwright_stealth import Stealth
+import imaplib
+import email
+from email.header import decode_header
+from bs4 import BeautifulSoup
+from dotenv import load_dotenv
 
 # Get project root
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-def extract_selected_emails():
+def extract_selected_emails(server=None, port=None, email_user=None, email_pass=None, folder="INBOX"):
     """
-    Connects to Gmail using a persistent context and stealth mode to bypass security checks.
+    Connects to email server via IMAP, retrieves the latest email from the specified folder,
+    extracts the subject and body (stripping HTML tags if present), and saves the results.
     """
-    user_data_dir = os.path.join(PROJECT_ROOT, "data", "user_data")
-    os.makedirs(user_data_dir, exist_ok=True)
+    # Fallback to env variables if not provided
+    load_dotenv(os.path.join(PROJECT_ROOT, ".env"))
     
-    # Try to remove lock files if they exist (common cause of exit code 21)
-    lock_file = os.path.join(user_data_dir, "SingletonLock")
-    if os.path.exists(lock_file):
-        try:
-            os.remove(lock_file)
-        except:
-            pass
+    server = server or os.getenv("IMAP_SERVER", "imap.gmail.com")
+    port = port or os.getenv("IMAP_PORT", "993")
+    email_user = email_user or os.getenv("IMAP_EMAIL")
+    email_pass = email_pass or os.getenv("IMAP_PASSWORD")
+    
+    if not email_user or not email_pass:
+        return {"success": False, "error": "IMAP credentials not provided or configured in .env"}
+        
+    try:
+        port = int(port)
+    except ValueError:
+        return {"success": False, "error": f"Invalid port: {port}"}
 
-    with sync_playwright() as p:
-        try:
-            # Launch with persistent context to save login state
-            # We use common arguments to look like a regular browser
-            context = p.chromium.launch_persistent_context(
-                user_data_dir,
-                headless=False,
-                args=[
-                    "--disable-blink-features=AutomationControlled",
-                    "--no-sandbox",
-                    "--disable-dev-shm-usage",
-                    "--disable-gpu",
-                ],
-                user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
-                slow_mo=500 # Slow down actions a bit for stability
-            )
-        except Exception as e:
-            print(f"CRITICAL: Failed to launch browser: {e}")
-            print("This often happens if another Chrome instance is using the same profile.")
-            print(f"Please try closing any other open Chrome windows and try again.")
-            return
+    print(f"Connecting to {server}:{port} via IMAP SSL...")
+    try:
+        # Connect and login
+        mail = imaplib.IMAP4_SSL(server, port)
+        mail.login(email_user, email_pass)
         
-        page = context.pages[0] if context.pages else context.new_page()
-        
-        # Apply stealth to hide automation
-        Stealth().apply_stealth_sync(page)
-        
-        print("Opening Gmail... If you are not logged in, please do so now.")
-        print("The browser will save your session in data/user_data.")
-        page.goto("https://mail.google.com")
-        
-        # Wait for user to navigate to an email or for the email body to appear
-        print("Waiting for an email to be opened (looking for Gmail body selector)...")
-        
-        try:
-            # Gmail body selector (broad)
-            page.wait_for_selector(".a3s", timeout=120000) # Wait up to 2 minutes for user login/nav
+        # Select folder
+        status, select_info = mail.select(folder)
+        if status != 'OK':
+            mail.logout()
+            return {"success": False, "error": f"Failed to select folder '{folder}': {select_info}"}
             
-            # Extract basic info
-            subject = page.title()
-            body = page.inner_text(".a3s")
+        # Search all emails
+        status, messages = mail.search(None, 'ALL')
+        if status != 'OK':
+            mail.logout()
+            return {"success": False, "error": "Failed to search mailbox"}
             
-            email_data = {
-                "subject": subject,
-                "body": body,
-                "platform": "Gmail"
-            }
+        mail_ids = messages[0].split()
+        if not mail_ids:
+            mail.logout()
+            return {"success": False, "error": f"No emails found in folder '{folder}'"}
             
-            data_dir = os.path.join(PROJECT_ROOT, "data")
-            os.makedirs(data_dir, exist_ok=True)
-            output_path = os.path.join(data_dir, "extracted_email.json")
+        # Get the latest message ID
+        latest_email_id = mail_ids[-1]
+        
+        # Fetch the message content
+        status, data = mail.fetch(latest_email_id, '(RFC822)')
+        if status != 'OK':
+            mail.logout()
+            return {"success": False, "error": "Failed to fetch email data"}
             
-            with open(output_path, "w") as f:
-                json.dump(email_data, f)
+        raw_email = data[0][1]
+        msg = email.message_from_bytes(raw_email)
+        
+        # Decode the email subject
+        subject = "No Subject"
+        if msg["Subject"]:
+            decoded_header_parts = decode_header(msg["Subject"])
+            subject_parts = []
+            for part, encoding in decoded_header_parts:
+                if isinstance(part, bytes):
+                    try:
+                        subject_parts.append(part.decode(encoding or "utf-8", errors="replace"))
+                    except Exception:
+                        subject_parts.append(part.decode("latin-1", errors="replace"))
+                else:
+                    subject_parts.append(str(part))
+            subject = "".join(subject_parts)
+            
+        # Extract email body
+        body = ""
+        if msg.is_multipart():
+            # Walk multipart email
+            for part in msg.walk():
+                content_type = part.get_content_type()
+                content_disposition = str(part.get("Content-Disposition"))
                 
-            print(f"Success! Extracted: {subject}")
+                # Fetch text plain
+                if content_type == "text/plain" and "attachment" not in content_disposition:
+                    try:
+                        body = part.get_payload(decode=True).decode(part.get_content_charset() or "utf-8", errors="replace")
+                        break
+                    except Exception:
+                        pass
+                # Fetch text HTML if plain text not found
+                elif content_type == "text/html" and "attachment" not in content_disposition and not body:
+                    try:
+                        html_content = part.get_payload(decode=True).decode(part.get_content_charset() or "utf-8", errors="replace")
+                        soup = BeautifulSoup(html_content, "html.parser")
+                        body = soup.get_text()
+                    except Exception:
+                        pass
+        else:
+            # Single part email
+            content_type = msg.get_content_type()
+            try:
+                body = msg.get_payload(decode=True).decode(msg.get_content_charset() or "utf-8", errors="replace")
+                if content_type == "text/html":
+                    soup = BeautifulSoup(body, "html.parser")
+                    body = soup.get_text()
+            except Exception:
+                pass
+                
+        body = body.strip()
+        if not body:
+            body = "No text content found in the email."
             
-        except Exception as e:
-            print(f"Extraction failed or timed out: {e}")
-            print("Make sure you have an email message open on the screen.")
+        email_data = {
+            "subject": subject,
+            "body": body,
+            "platform": "IMAP"
+        }
         
-        # Keep browser open for a few seconds so user sees the success/failure
-        import time
-        time.sleep(5)
-        context.close()
+        # Save to extracted_email.json (for backwards-compatibility/pipelines)
+        data_dir = os.path.join(PROJECT_ROOT, "data")
+        os.makedirs(data_dir, exist_ok=True)
+        output_path = os.path.join(data_dir, "extracted_email.json")
+        with open(output_path, "w") as f:
+            json.dump(email_data, f)
+            
+        print(f"Success! Extracted: {subject}")
+        mail.close()
+        mail.logout()
+        return {"success": True, "data": email_data}
+        
+    except Exception as e:
+        print(f"IMAP Extraction failed: {e}")
+        return {"success": False, "error": str(e)}
 
 if __name__ == "__main__":
-    extract_selected_emails()
+    # If run directly, read from env and extract
+    result = extract_selected_emails()
+    if result["success"]:
+        print(json.dumps(result["data"], indent=2))
+        sys.exit(0)
+    else:
+        print(f"Error: {result['error']}")
+        sys.exit(1)

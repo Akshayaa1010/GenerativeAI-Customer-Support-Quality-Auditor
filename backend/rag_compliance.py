@@ -11,11 +11,17 @@ class MockEmbeddings(Embeddings):
         pass
     
     def embed_documents(self, texts):
-        # Return simple hash-based vectors for testing
-        return [[float(ord(c) % 256) / 256 for c in text[:384]] for text in texts]
+        return [self._embed(text) for text in texts]
     
     def embed_query(self, text):
-        return [float(ord(c) % 256) / 256 for c in text[:384]]
+        return self._embed(text)
+        
+    def _embed(self, text):
+        dim = 8
+        vec = [0.0] * dim
+        for i, c in enumerate(text):
+            vec[i % dim] += ord(c)
+        return [float(int(x) % 256) / 256 for x in vec]
 
 class ComplianceRAG:
     def __init__(self):
