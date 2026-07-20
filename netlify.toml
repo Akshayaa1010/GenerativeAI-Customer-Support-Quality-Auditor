@@ -1,0 +1,26 @@
+[build]
+  publish = "frontend"
+
+[[redirects]]
+  from = "/api/*"
+  to = "https://your-backend.onrender.com/api/:splat"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/register"
+  to = "https://your-backend.onrender.com/register"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/login"
+  to = "https://your-backend.onrender.com/login"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/logout"
+  to = "https://your-backend.onrender.com/logout"
+  status = 200
+  force = true

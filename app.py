@@ -24,6 +24,14 @@ app = Flask(
 )
 app.secret_key = os.environ.get("FLASK_SECRET_KEY", "compliance-auditor-pro-secret-key-1337")
 
+# Configure CORS for decoupled frontend deployment (Netlify/Vercel)
+try:
+    from flask_cors import CORS
+    CORS(app, supports_credentials=True)
+except ImportError:
+    pass
+
+
 # Global variables for background task monitoring
 TASKS = {}
 
@@ -192,6 +200,21 @@ def dashboard():
     organization = session.get('organization', 'Default')
     initials = (username[:2].upper()) if username else "AD"
     return render_template('dashboard.html', username=username, organization=organization, initials=initials)
+
+@app.route('/api/user-info')
+def user_info():
+    if 'logged_in' in session:
+        username = session.get('username', 'Administrator')
+        organization = session.get('organization', 'Default')
+        initials = (username[:2].upper()) if username else "AD"
+        return jsonify({
+            "logged_in": True,
+            "username": username,
+            "organization": organization,
+            "initials": initials
+        })
+    return jsonify({"logged_in": False})
+
 
 # ================= COMPLIANCE DATA ACCESS HELPERS =================
 def initialize_audit_csv():

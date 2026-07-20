@@ -13,7 +13,9 @@ document.addEventListener('DOMContentLoaded', () => {
     initEmailPanel();
     initAgentDeepDivePanel();
     initThemeToggle();
+    initUserInfo();
 });
+
 
 // Global state for charts to allow updates
 let agentCompareChart = null;
@@ -953,3 +955,29 @@ function initThemeToggle() {
         updateThemeIcon(targetTheme);
     });
 }
+
+/* ================= Dynamic User Info Initialization ================= */
+function initUserInfo() {
+    fetch('/api/user-info', { credentials: 'include' })
+        .then(res => res.json())
+        .then(data => {
+            if (data && data.logged_in) {
+                const avatarEl = document.querySelector('.user-avatar');
+                const nameEl = document.querySelector('.user-name');
+                const roleEl = document.querySelector('.user-role');
+                if (avatarEl && (avatarEl.textContent.includes('{{') || !avatarEl.textContent.trim())) {
+                    avatarEl.textContent = data.initials;
+                }
+                if (nameEl && (nameEl.textContent.includes('{{') || !nameEl.textContent.trim())) {
+                    nameEl.textContent = data.username;
+                    nameEl.title = data.username;
+                }
+                if (roleEl && (roleEl.textContent.includes('{{') || !roleEl.textContent.trim())) {
+                    roleEl.textContent = data.organization;
+                    roleEl.title = data.organization;
+                }
+            }
+        })
+        .catch(err => console.log('User info fetch note:', err));
+}
+

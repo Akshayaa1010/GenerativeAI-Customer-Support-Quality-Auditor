@@ -1,57 +1,76 @@
-# 🚀 Production Deployment Guide
+# 🚀 Split Deployment Guide (Netlify / Vercel + Render)
 
-Follow this step-by-step guide to deploy the **GenerativeAI Customer Support Quality Auditor Pro** to production platforms such as **Railway.app**, **Render.com**, or **Hugging Face Spaces** using Docker.
+Follow this step-by-step guide to deploy the **GenerativeAI Customer Support Quality Auditor Pro** using a decoupled architecture:
+- **Backend**: Hosted on **Render.com** (Flask API + Gunicorn WSGI + Docker)
+- **Frontend**: Hosted on **Vercel** or **Netlify** (Vanilla JS/CSS + Reverse Proxy)
 
 ---
 
-## 1. Prerequisites
+## 📋 Prerequisites
 - Repository pushed to GitHub: `Akshayaa1010/GenerativeAI-Customer-Support-Quality-Auditor`
-- An active account on your deployment platform (e.g., Railway, Render, or Hugging Face)
 - API Keys:
   - `GROQ_API_KEY`: Groq API key for Llama 3.3 70B & Whisper-v3
   - `PINECONE_API_KEY`: Pinecone API key for vector RAG policy retrieval
 
 ---
 
-## 2. Deploying on Railway.app
-
-1. Log in to [Railway.app](https://railway.app/).
-2. Click **"New Project"** -> **"Deploy from GitHub repo"**.
-3. Select the repository `Akshayaa1010/GenerativeAI-Customer-Support-Quality-Auditor`.
-4. Railway will automatically detect the `Dockerfile`.
-5. Go to the **Variables** tab in your Railway dashboard and add:
-   - `GROQ_API_KEY` = `your_groq_api_key`
-   - `PINECONE_API_KEY` = `your_pinecone_api_key`
-   - `FLASK_SECRET_KEY` = `your_random_secret_key` (optional but recommended)
-6. Railway will build the container using `Dockerfile` and serve the app via **Gunicorn WSGI**.
-
----
-
-## 3. Deploying on Render.com
+## ⚙️ Step 1: Deploy Backend on Render.com
 
 1. Log in to [Render.com](https://render.com/).
-2. Click **"New +"** -> **"Web Service"**.
-3. Connect your GitHub repository.
-4. Select **Environment**: `Docker`.
-5. Under **Environment Variables**, add:
-   - `GROQ_API_KEY`
-   - `PINECONE_API_KEY`
-   - `PORT` (Render sets `$PORT` automatically)
+2. Click **"New +"** -> **"Web Service"** (or use the **Blueprint** option with `render.yaml`).
+3. Connect your GitHub repository `Akshayaa1010/GenerativeAI-Customer-Support-Quality-Auditor`.
+4. Choose **Environment**: `Docker` (or select `render.yaml` for automatic setup).
+5. In the **Environment Variables** section, set:
+   - `GROQ_API_KEY` = `your_groq_api_key`
+   - `PINECONE_API_KEY` = `your_pinecone_api_key`
+   - `FLASK_SECRET_KEY` = `a_random_secure_secret_key`
 6. Click **"Create Web Service"**.
+7. Once Render builds and deploys your service, copy your Render URL (e.g. `https://compliance-auditor-backend.onrender.com`).
 
 ---
 
-## 4. Container Strategy & Performance Benefits
+## 📐 Step 2: Deploy Frontend on Vercel
 
-We use a lightweight, production-optimized `Dockerfile` based on `python:3.10-slim` which:
-- Pre-downloads the SpaCy NLP model (`en_core_web_sm`) during the build step.
-- Runs the Flask application using **Gunicorn WSGI** with multiple workers and threads for concurrent requests.
-- Uses dynamic `$PORT` binding (`0.0.0.0:${PORT:-7860}`) for universal compatibility across cloud hosts.
+1. Log in to [Vercel.com](https://vercel.com/).
+2. Click **"Add New..."** -> **"Project"**.
+3. Import your GitHub repository `Akshayaa1010/GenerativeAI-Customer-Support-Quality-Auditor`.
+4. Update `vercel.json` in your repository replacing `https://your-backend.onrender.com` with your actual Render URL from Step 1:
+   ```json
+   {
+     "version": 2,
+     "rewrites": [
+       { "source": "/api/:path*", "destination": "https://YOUR_BACKEND.onrender.com/api/:path*" },
+       { "source": "/register", "destination": "https://YOUR_BACKEND.onrender.com/register" },
+       { "source": "/login", "destination": "https://YOUR_BACKEND.onrender.com/login" },
+       { "source": "/logout", "destination": "https://YOUR_BACKEND.onrender.com/logout" }
+     ]
+   }
+   ```
+5. Click **"Deploy"**. Vercel will serve your static frontend assets and seamlessly proxy `/api/*` requests to Render!
 
 ---
 
-## 5. Persistent Storage & Production Database
+## 🌐 Step 3: Deploy Frontend on Netlify (Alternative)
 
-Cloud containers use ephemeral storage. To preserve audit logs (`data/audit_results.csv`) and user accounts (`data/users.json`) across redeployments:
-- **Persistent Volume**: Attach a persistent storage volume to `/app/data` in Railway/Render settings.
-- **Production Storage**: For enterprise deployments, configure a managed database (PostgreSQL/MySQL) or object storage (S3) for audit logs.
+1. Log in to [Netlify.com](https://netlify.com/).
+2. Click **"Add new site"** -> **"Import an existing project"**.
+3. Select **GitHub** and choose `Akshayaa1010/GenerativeAI-Customer-Support-Quality-Auditor`.
+4. Update `netlify.toml` in your repository replacing `https://your-backend.onrender.com` with your actual Render URL:
+   ```toml
+   [build]
+     publish = "frontend"
+
+   [[redirects]]
+     from = "/api/*"
+     to = "https://YOUR_BACKEND.onrender.com/api/:splat"
+     status = 200
+     force = true
+   ```
+5. Click **"Deploy Site"**. Netlify will host your frontend and proxy backend API routes to Render with zero CORS issues!
+
+---
+
+## 💾 Persistent Storage
+
+Render containers use ephemeral storage. To persist audit logs (`data/audit_results.csv`) and user databases (`data/users.json`) across redeployments:
+- Attach a **Persistent Disk** on Render mounted at `/app/data`.
