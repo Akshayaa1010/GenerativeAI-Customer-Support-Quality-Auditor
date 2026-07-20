@@ -24,12 +24,14 @@ app = Flask(
 )
 app.secret_key = os.environ.get("FLASK_SECRET_KEY", "compliance-auditor-pro-secret-key-1337")
 
-# Configure CORS for decoupled frontend deployment (Netlify/Vercel)
+# Configure CORS for decoupled frontend deployment (Netlify/Vercel -> Northflank backend)
+BACKEND_URL = os.environ.get("BACKEND_URL", "https://customer-call-auditor--29hk88kg4w4g.code.run")
 try:
     from flask_cors import CORS
-    CORS(app, supports_credentials=True)
+    CORS(app, supports_credentials=True, origins=[BACKEND_URL, "http://localhost:7860"])
 except ImportError:
     pass
+
 
 
 # Global variables for background task monitoring

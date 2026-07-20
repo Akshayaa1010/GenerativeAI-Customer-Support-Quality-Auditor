@@ -3,24 +3,24 @@
 
 [[redirects]]
   from = "/api/*"
-  to = "https://your-backend.onrender.com/api/:splat"
+  to = "https://customer-call-auditor--29hk88kg4w4g.code.run/api/:splat"
   status = 200
   force = true
 
 [[redirects]]
   from = "/register"
-  to = "https://your-backend.onrender.com/register"
+  to = "https://customer-call-auditor--29hk88kg4w4g.code.run/register"
   status = 200
   force = true
 
 [[redirects]]
   from = "/login"
-  to = "https://your-backend.onrender.com/login"
+  to = "https://customer-call-auditor--29hk88kg4w4g.code.run/login"
   status = 200
   force = true
 
 [[redirects]]
   from = "/logout"
-  to = "https://your-backend.onrender.com/logout"
+  to = "https://customer-call-auditor--29hk88kg4w4g.code.run/logout"
   status = 200
   force = true
