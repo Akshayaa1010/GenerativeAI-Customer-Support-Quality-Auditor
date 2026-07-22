@@ -1,21 +1,34 @@
 {
   "version": 2,
-  "rewrites": [
+  "routes": [
     {
-      "source": "/api/:path*",
-      "destination": "https://customer-call-auditor--29hk88kg4w4g.code.run/api/:path*"
+      "src": "/static/(.*)",
+      "dest": "/frontend/static/$1"
     },
     {
-      "source": "/register",
-      "destination": "https://customer-call-auditor--29hk88kg4w4g.code.run/register"
+      "src": "/login.html",
+      "dest": "/frontend/templates/login.html"
     },
     {
-      "source": "/login",
-      "destination": "https://customer-call-auditor--29hk88kg4w4g.code.run/login"
+      "src": "/dashboard.html",
+      "dest": "/frontend/templates/dashboard.html"
     },
     {
-      "source": "/logout",
-      "destination": "https://customer-call-auditor--29hk88kg4w4g.code.run/logout"
+      "src": "/api/(.*)",
+      "dest": "https://customer-call-auditor--29hk88kg4w4g.code.run/api/$1"
+    },
+    {
+      "src": "/register",
+      "dest": "https://customer-call-auditor--29hk88kg4w4g.code.run/register"
+    },
+    {
+      "src": "/logout",
+      "dest": "https://customer-call-auditor--29hk88kg4w4g.code.run/logout"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/index.html"
     }
   ]
 }
+
