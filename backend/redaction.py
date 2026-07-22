@@ -1,11 +1,14 @@
 import re
+import logging
 import spacy
 
-# Load spaCy model for NER
+logger = logging.getLogger(__name__)
+
+# Load spaCy model for NER — loaded once at module level (shared singleton)
 try:
     nlp = spacy.load("en_core_web_sm")
 except OSError:
-    print("Warning: spaCy model 'en_core_web_sm' not found. Falling back to a blank model for NER.")
+    logger.warning("spaCy model 'en_core_web_sm' not found. Falling back to a blank model for NER.")
     nlp = spacy.blank("en")
 def redact_pii(text):
     """

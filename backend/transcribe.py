@@ -1,8 +1,11 @@
 import os
+import logging
 from groq import Groq
 from dotenv import load_dotenv
 
 load_dotenv()
+
+logger = logging.getLogger(__name__)
 
 def transcribe_audio(audio_path, language=None):
     if not os.path.exists(audio_path):
@@ -15,7 +18,7 @@ def transcribe_audio(audio_path, language=None):
     client = Groq(api_key=api_key)
     
     try:
-        print(f"Transcribing {audio_path} via Groq Cloud... (Language: {language if language else 'Auto-detect'})")
+        logger.info(f"Transcribing {audio_path} via Groq Cloud... (Language: {language if language else 'Auto-detect'})")
         with open(audio_path, "rb") as file:
             # Prepare transcription arguments
             transcription_args = {
@@ -29,7 +32,7 @@ def transcribe_audio(audio_path, language=None):
             transcription = client.audio.transcriptions.create(**transcription_args)
         return transcription.text
     except Exception as e:
-        print(f"Error during cloud transcription: {str(e)}")
+        logger.error(f"Error during cloud transcription: {str(e)}")
         raise e
 
 if __name__ == "__main__":
@@ -47,6 +50,6 @@ if __name__ == "__main__":
         
         with open(output_path, "w", encoding="utf-8") as f:
             f.write(text)
-        print(f"Step 1 Complete: {output_path} created.")
+        logger.info(f"Step 1 Complete: {output_path} created.")
     except Exception as e:
-        print(f"Transcription failed: {e}")
+        logger.error(f"Transcription failed: {e}")

@@ -1,9 +1,12 @@
 import os
+import logging
 from langchain_pinecone import PineconeVectorStore
 from langchain.embeddings.base import Embeddings
 from dotenv import load_dotenv
 
 load_dotenv()
+
+logger = logging.getLogger(__name__)
 
 # Simple mock embeddings class
 class MockEmbeddings(Embeddings):
@@ -32,7 +35,7 @@ class ComplianceRAG:
                 embedding=self.embeddings
             )
         except Exception as e:
-            print(f"Note: Could not connect to Pinecone: {e}")
+            logger.warning(f"Could not connect to Pinecone: {e}")
             self.vectorstore = None
 
     def get_rules_for_context(self, chunk_text):

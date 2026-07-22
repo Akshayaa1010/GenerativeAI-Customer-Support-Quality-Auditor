@@ -2,6 +2,7 @@ import os
 import sys
 import uuid
 import json
+import logging
 import pandas as pd
 from datetime import datetime
 from threading import Thread
@@ -13,8 +14,16 @@ PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(PROJECT_ROOT)
 sys.path.append(os.path.join(PROJECT_ROOT, "backend"))
 
-# Load environment variables
+# Load environment variables — kept for local development; production uses Cloud Run env vars
 load_dotenv(os.path.join(PROJECT_ROOT, ".env"))
+
+# Configure logging for production
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
+    stream=sys.stdout,
+)
+logger = logging.getLogger(__name__)
 
 # Flask App Initializer with custom directories
 app = Flask(
@@ -59,9 +68,14 @@ def clean_pdf_text(text):
     return cleaned
 # ================= USER STORAGE & AUTHENTICATION =================
 import hashlib
+from werkzeug.security import generate_password_hash, check_password_hash
+
+# NOTE (Future): Replace local users.json with Google Cloud Firestore for
+# persistent user storage across Cloud Run instances and deployments.
 USERS_FILE = os.path.join(PROJECT_ROOT, "data", "users.json")
 
-def hash_password(password):
+def _sha256_hash(password):
+    """Legacy SHA-256 hash — only used for backward-compatible migration."""
     return hashlib.sha256(password.encode('utf-8')).hexdigest()
 
 def load_users():
@@ -74,43 +88,55 @@ def load_users():
         with open(USERS_FILE, 'r') as f:
             return json.load(f)
     except Exception as e:
-        print(f"Error loading users: {e}")
+        logger.error(f"Error loading users: {e}")
         return {}
 
 def save_users(users):
     try:
+        # NOTE (Future): Replace file write with Firestore document update.
         with open(USERS_FILE, 'w') as f:
             json.dump(users, f, indent=4)
         return True
     except Exception as e:
-        print(f"Error saving users: {e}")
+        logger.error(f"Error saving users: {e}")
         return False
 
 def create_user(username, password, organization):
     users = load_users()
     if username in users:
         return False, "Username already exists"
-    
+
     users[username] = {
-        "password_hash": hash_password(password),
+        "password_hash": generate_password_hash(password),
         "organization": organization
     }
     save_users(users)
     return True, "Account created successfully"
 
 def authenticate_user(username, password):
-    # First check environmental variable default admin
+    # Check environment-variable-configured default admin (production override)
     env_user = os.getenv('AUTH_USERNAME', 'admin')
     env_pass = os.getenv('AUTH_PASSWORD', 'admin123')
     if username == env_user and password == env_pass:
         return True, "Default"
-        
+
     users = load_users()
     if username in users:
         user_data = users[username]
-        if user_data.get("password_hash") == hash_password(password):
-            return True, user_data.get("organization", "Default")
-            
+        stored_hash = user_data.get("password_hash", "")
+
+        # Try Werkzeug secure hash first
+        if stored_hash.startswith("pbkdf2:") or stored_hash.startswith("scrypt:"):
+            if check_password_hash(stored_hash, password):
+                return True, user_data.get("organization", "Default")
+        else:
+            # Backward-compatible: attempt legacy SHA-256 check and auto-migrate
+            if stored_hash == _sha256_hash(password):
+                logger.info(f"Migrating password hash for user '{username}' to Werkzeug secure hash.")
+                user_data["password_hash"] = generate_password_hash(password)
+                save_users(users)
+                return True, user_data.get("organization", "Default")
+
     return False, None
 
 # ================= AUTHENTICATION DECORATOR =================
@@ -220,6 +246,8 @@ def user_info():
 
 # ================= COMPLIANCE DATA ACCESS HELPERS =================
 def initialize_audit_csv():
+    # NOTE (Future): Replace local CSV file with Google Cloud Storage (GCS) bucket
+    # for persistent audit data storage across Cloud Run instances.
     csv_path = os.path.join(PROJECT_ROOT, "data", "audit_results.csv")
     if not os.path.exists(csv_path):
         os.makedirs(os.path.dirname(csv_path), exist_ok=True)
@@ -261,7 +289,7 @@ def read_audit_data():
                 df = df[df['Organization'] == org]
         return df
     except Exception as e:
-        print(f"Error reading audit_results.csv: {e}")
+        logger.error(f"Error reading audit_results.csv: {e}")
         return pd.DataFrame()
 
 # ================= REST API ENDPOINTS =================
@@ -473,7 +501,7 @@ def async_audit_pipeline(task_id, audio_path, agent_name, language, organization
     except Exception as e:
         TASKS[task_id]["error"] = str(e)
         TASKS[task_id]["status"] = "Audit Failed"
-        print(f"CRITICAL in async thread: {e}")
+        logger.error(f"CRITICAL in async audit thread: {e}")
 
 @app.route('/api/upload-audio', methods=['POST'])
 @login_required
@@ -717,7 +745,7 @@ def download_roadmap_pdf():
                     if clean_line.strip():
                         pdf.multi_cell(0, 6, clean_line)
             except Exception as e:
-                print(f"Skipping PDF row error: {e}")
+                logger.warning(f"Skipping PDF row error: {e}")
                 
         pdf_output = pdf.output(dest='S')
         

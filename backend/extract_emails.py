@@ -1,6 +1,7 @@
 import sys
 import os
 import json
+import logging
 import imaplib
 import email
 from email.header import decode_header
@@ -9,6 +10,8 @@ from dotenv import load_dotenv
 
 # Get project root
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+logger = logging.getLogger(__name__)
 
 def extract_selected_emails(server=None, port=None, email_user=None, email_pass=None, folder="INBOX"):
     """
@@ -31,7 +34,7 @@ def extract_selected_emails(server=None, port=None, email_user=None, email_pass=
     except ValueError:
         return {"success": False, "error": f"Invalid port: {port}"}
 
-    print(f"Connecting to {server}:{port} via IMAP SSL...")
+    logger.info(f"Connecting to {server}:{port} via IMAP SSL...")
     try:
         # Connect and login
         mail = imaplib.IMAP4_SSL(server, port)
@@ -132,13 +135,13 @@ def extract_selected_emails(server=None, port=None, email_user=None, email_pass=
         with open(output_path, "w") as f:
             json.dump(email_data, f)
             
-        print(f"Success! Extracted: {subject}")
+        logger.info(f"Success! Extracted email subject: {subject}")
         mail.close()
         mail.logout()
         return {"success": True, "data": email_data}
         
     except Exception as e:
-        print(f"IMAP Extraction failed: {e}")
+        logger.error(f"IMAP Extraction failed: {e}")
         return {"success": False, "error": str(e)}
 
 if __name__ == "__main__":

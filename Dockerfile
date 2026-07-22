@@ -27,15 +27,16 @@ COPY . .
 # Ensure data directories exist
 RUN mkdir -p data/uploads data/user_data
 
-# Expose port (Northflank injects $PORT at runtime — default 8080)
+# Expose port (Cloud Run injects $PORT at runtime — default 8080)
 EXPOSE 8080
 
-# Launch with Gunicorn — uses Northflank-injected $PORT (fallback 8080)
+# Launch with Gunicorn — uses Cloud Run-injected $PORT (fallback 8080)
+# 1 worker + 8 threads: reduces memory vs multi-worker while keeping I/O concurrency
 # Shell exec form ensures gunicorn receives OS signals for graceful shutdown
 CMD exec gunicorn \
     --bind 0.0.0.0:${PORT:-8080} \
-    --workers 2 \
-    --threads 4 \
+    --workers 1 \
+    --threads 8 \
     --timeout 120 \
     --keep-alive 5 \
     --access-logfile - \

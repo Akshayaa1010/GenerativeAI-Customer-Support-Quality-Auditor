@@ -1,5 +1,6 @@
 import os
 import sys
+import logging
 import pandas as pd
 import json
 from groq import Groq
@@ -8,12 +9,24 @@ from rag_compliance import ComplianceRAG
 # Get the project root directory
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
+logger = logging.getLogger(__name__)
+
 client = Groq(api_key=os.getenv("GROQ_API_KEY"))
-rag_system = ComplianceRAG()
+
+# Lazy-loaded RAG system — initialized on first use to reduce startup memory
+_rag_system = None
+
+def get_rag_system():
+    """Return the shared ComplianceRAG instance, initializing it on first call."""
+    global _rag_system
+    if _rag_system is None:
+        logger.info("Initializing ComplianceRAG system (first use)...")
+        _rag_system = ComplianceRAG()
+    return _rag_system
 
 def score_chunk(chunk_text):
     # Retrieve specific rules for this part of the talk
-    relevant_rules = rag_system.get_rules_for_context(chunk_text)
+    relevant_rules = get_rag_system().get_rules_for_context(chunk_text)
     
     prompt = f"""
     Evaluate this chunk based on these specific rules:
@@ -41,12 +54,12 @@ def score_chunk(chunk_text):
     return json.loads(response.choices[0].message.content)
 
 def score_email(email_text, agent_name="Unknown Agent", filename=None, organization="Default", **kwargs):
-    print(f"DEBUG: score_email called with filename={filename}")
+    logger.debug(f"score_email called with filename={filename}")
     if filename is None:
         from datetime import datetime
         filename = f"Email_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
     # Retrieve specific rules for email context
-    relevant_rules = rag_system.get_rules_for_context(email_text)
+    relevant_rules = get_rag_system().get_rules_for_context(email_text)
     
     prompt = f"""
     Evaluate this customer service email based on these specific rules:
@@ -236,13 +249,13 @@ def run_average_audit(file_path, agent_name="Unknown Agent", masking_score=100, 
         df = pd.concat([existing_df[column_order], df], ignore_index=True)
         
     df.to_csv(csv_filename, index=False)
-    print(f"\nCSV file saved: {csv_filename}")
-    
-    # Print results
-    print(f"\n--- FINAL AUDIT RESULTS FOR {agent_name} ---")
-    print(f"Final Empathy Score: {final_empathy}")
-    print(f"Final Professionalism Score: {final_professionalism}")
-    print(f"Overall Compliance: {overall_compliance}")
+    logger.info(f"CSV file saved: {csv_filename}")
+
+    # Log final audit results
+    logger.info(f"--- FINAL AUDIT RESULTS FOR {agent_name} ---")
+    logger.info(f"Final Empathy Score: {final_empathy}")
+    logger.info(f"Final Professionalism Score: {final_professionalism}")
+    logger.info(f"Overall Compliance: {overall_compliance}")
     
     return df
 

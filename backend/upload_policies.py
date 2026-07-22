@@ -1,11 +1,14 @@
 import os
 import sys
+import logging
 from pinecone import Pinecone, ServerlessSpec
 from langchain_pinecone import PineconeVectorStore
 from langchain.embeddings.base import Embeddings
 from dotenv import load_dotenv
 
 load_dotenv()
+
+logger = logging.getLogger(__name__)
 
 # Simple mock embeddings class (for testing)
 class MockEmbeddings(Embeddings):
@@ -52,6 +55,6 @@ try:
     )
 
 except Exception as e:
-    print(f"Note: Pinecone upload encountered an issue: {e}")
+    logger.warning(f"Pinecone upload encountered an issue: {e}")
 
-print("Policy rules uploaded to Pinecone successfully.")
+logger.info("Policy rules uploaded to Pinecone successfully.")
