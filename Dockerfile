@@ -3,17 +3,16 @@ FROM python:3.10-slim
 
 # Prevent Python from writing bytecode and buffer stdout/stderr
 ENV PYTHONUNBUFFERED=1 \
-    PYTHONDONTWRITEBYTECODE=1 \
-    PORT=7860
+    PYTHONDONTWRITEBYTECODE=1
+
+# Set working directory
+WORKDIR /app
 
 # Install required system build packages
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     curl \
     && rm -rf /var/lib/apt/lists/*
-
-# Set working directory
-WORKDIR /app
 
 # Copy requirements first for Docker layer caching
 COPY requirements.txt .
@@ -28,8 +27,17 @@ COPY . .
 # Ensure data directories exist
 RUN mkdir -p data/uploads data/user_data
 
-# Expose container port
-EXPOSE 7860
+# Expose port (Northflank injects $PORT at runtime — default 8080)
+EXPOSE 8080
 
-# Launch application using Gunicorn WSGI server
-CMD exec gunicorn --bind 0.0.0.0:${PORT:-7860} --workers 2 --threads 4 app:app
+# Launch with Gunicorn — uses Northflank-injected $PORT (fallback 8080)
+# Shell exec form ensures gunicorn receives OS signals for graceful shutdown
+CMD exec gunicorn \
+    --bind 0.0.0.0:${PORT:-8080} \
+    --workers 2 \
+    --threads 4 \
+    --timeout 120 \
+    --keep-alive 5 \
+    --access-logfile - \
+    --error-logfile - \
+    app:app
