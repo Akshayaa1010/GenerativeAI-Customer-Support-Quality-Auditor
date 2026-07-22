@@ -6,8 +6,16 @@
       "dest": "/frontend/static/$1"
     },
     {
+      "src": "/login",
+      "dest": "/frontend/templates/login.html"
+    },
+    {
       "src": "/login.html",
       "dest": "/frontend/templates/login.html"
+    },
+    {
+      "src": "/dashboard",
+      "dest": "/frontend/templates/dashboard.html"
     },
     {
       "src": "/dashboard.html",
@@ -27,7 +35,7 @@
     },
     {
       "src": "/(.*)",
-      "dest": "/index.html"
+      "dest": "/frontend/templates/login.html"
     }
   ]
 }
