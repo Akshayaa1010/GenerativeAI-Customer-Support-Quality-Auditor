@@ -50,6 +50,13 @@ TASKS = {}
 from backend.scoring_engine import score_email, run_average_audit
 from backend.extract_emails import extract_selected_emails
 from backend.redaction import redact_pii
+from backend.database import (
+    init_db,
+    create_user as db_create_user,
+    authenticate_user as db_authenticate_user,
+    get_audit_dataframe,
+    get_db_stats,
+)
 
 # Fpdf2 import
 try:
@@ -67,77 +74,18 @@ def clean_pdf_text(text):
     cleaned = cleaned.replace('\u201c', '"').replace('\u201d', '"').replace('\u2018', "'").replace('\u2019', "'")
     return cleaned
 # ================= USER STORAGE & AUTHENTICATION =================
-import hashlib
-from werkzeug.security import generate_password_hash, check_password_hash
-
-# NOTE (Future): Replace local users.json with Google Cloud Firestore for
-# persistent user storage across Cloud Run instances and deployments.
-USERS_FILE = os.path.join(PROJECT_ROOT, "data", "users.json")
-
-def _sha256_hash(password):
-    """Legacy SHA-256 hash — only used for backward-compatible migration."""
-    return hashlib.sha256(password.encode('utf-8')).hexdigest()
-
-def load_users():
-    if not os.path.exists(USERS_FILE):
-        os.makedirs(os.path.dirname(USERS_FILE), exist_ok=True)
-        with open(USERS_FILE, 'w') as f:
-            json.dump({}, f)
-        return {}
-    try:
-        with open(USERS_FILE, 'r') as f:
-            return json.load(f)
-    except Exception as e:
-        logger.error(f"Error loading users: {e}")
-        return {}
-
-def save_users(users):
-    try:
-        # NOTE (Future): Replace file write with Firestore document update.
-        with open(USERS_FILE, 'w') as f:
-            json.dump(users, f, indent=4)
-        return True
-    except Exception as e:
-        logger.error(f"Error saving users: {e}")
-        return False
+# Backed by SQLite via backend/database.py
+# Users are stored in the 'users' table with werkzeug password hashes.
 
 def create_user(username, password, organization):
-    users = load_users()
-    if username in users:
-        return False, "Username already exists"
-
-    users[username] = {
-        "password_hash": generate_password_hash(password),
-        "organization": organization
-    }
-    save_users(users)
-    return True, "Account created successfully"
+    """Create a new user in the SQLite database."""
+    return db_create_user(username, password, organization)
 
 def authenticate_user(username, password):
-    # Check environment-variable-configured default admin (production override)
+    """Authenticate against SQLite users table (with env-var admin fallback)."""
     env_user = os.getenv('AUTH_USERNAME', 'admin')
     env_pass = os.getenv('AUTH_PASSWORD', 'admin123')
-    if username == env_user and password == env_pass:
-        return True, "Default"
-
-    users = load_users()
-    if username in users:
-        user_data = users[username]
-        stored_hash = user_data.get("password_hash", "")
-
-        # Try Werkzeug secure hash first
-        if stored_hash.startswith("pbkdf2:") or stored_hash.startswith("scrypt:"):
-            if check_password_hash(stored_hash, password):
-                return True, user_data.get("organization", "Default")
-        else:
-            # Backward-compatible: attempt legacy SHA-256 check and auto-migrate
-            if stored_hash == _sha256_hash(password):
-                logger.info(f"Migrating password hash for user '{username}' to Werkzeug secure hash.")
-                user_data["password_hash"] = generate_password_hash(password)
-                save_users(users)
-                return True, user_data.get("organization", "Default")
-
-    return False, None
+    return db_authenticate_user(username, password, env_user, env_pass)
 
 # ================= AUTHENTICATION DECORATOR =================
 def login_required(f):
@@ -245,52 +193,19 @@ def user_info():
 
 
 # ================= COMPLIANCE DATA ACCESS HELPERS =================
-def initialize_audit_csv():
-    # NOTE (Future): Replace local CSV file with Google Cloud Storage (GCS) bucket
-    # for persistent audit data storage across Cloud Run instances.
-    csv_path = os.path.join(PROJECT_ROOT, "data", "audit_results.csv")
-    if not os.path.exists(csv_path):
-        os.makedirs(os.path.dirname(csv_path), exist_ok=True)
-        column_order = ['Chunk', 'empathy', 'professionalism', 'compliance', 'reason', 'violations', 'suggestions', 'evaluation', 'Agent', 'masking_score', 'masking_analysis', 'Source', 'Transcript', 'Filename', 'Organization']
-        df = pd.DataFrame(columns=column_order)
-        df.to_csv(csv_path, index=False)
-
-# Ensure data structure exists on app startup
-initialize_audit_csv()
-
+# Data is now stored in SQLite (data/audit_system.db) via backend/database.py
 
 def read_audit_data():
-    csv_path = os.path.join(PROJECT_ROOT, "data", "audit_results.csv")
-    if not os.path.exists(csv_path):
-        initialize_audit_csv()
-        
+    """Read audit results from SQLite, filtered by the logged-in user's org."""
     try:
-        df = pd.read_csv(csv_path)
-        if df is not None:
-            df['empathy'] = pd.to_numeric(df['empathy'], errors='coerce')
-            df['professionalism'] = pd.to_numeric(df['professionalism'], errors='coerce')
-            if 'masking_score' not in df.columns:
-                df['masking_score'] = 100
-            if 'Transcript' not in df.columns:
-                df['Transcript'] = "Historical data: Transcript not saved."
-            if 'Source' not in df.columns:
-                df['Source'] = 'Audio'
-            if 'Filename' not in df.columns:
-                df['Filename'] = "N/A"
-            if 'Organization' not in df.columns:
-                df['Organization'] = "Default"
-            df['masking_score'] = pd.to_numeric(df['masking_score'], errors='coerce').fillna(100)
-            df['Organization'] = df['Organization'].fillna("Default")
-            df = df.dropna(subset=['empathy', 'professionalism'])
-            
-            # Filter by logged-in user's organization if session exists
-            if 'logged_in' in session:
-                org = session.get('organization', 'Default')
-                df = df[df['Organization'] == org]
-        return df
+        org = session.get('organization', None) if 'logged_in' in session else None
+        return get_audit_dataframe(organization=org)
     except Exception as e:
-        logger.error(f"Error reading audit_results.csv: {e}")
+        logger.error(f"Error reading audit data from DB: {e}")
         return pd.DataFrame()
+
+# Ensure DB schema exists on app startup
+init_db()
 
 # ================= REST API ENDPOINTS =================
 
@@ -454,9 +369,11 @@ def async_audit_pipeline(task_id, audio_path, agent_name, language, organization
         TASKS[task_id]["progress"] = 25
         raw_text = transcribe_audio(audio_path, language=None if language == "auto-detect" else language)
         
-        data_dir = os.path.join(PROJECT_ROOT, "data")
+        # Use /tmp for intermediate transcript files on Cloud Run
+        # These are transient per-request files — /tmp is correct and sufficient
+        data_dir = "/tmp"
         os.makedirs(data_dir, exist_ok=True)
-        raw_transcript_path = os.path.join(data_dir, "1_raw_transcript.txt")
+        raw_transcript_path = os.path.join(data_dir, f"{task_id}_raw_transcript.txt")
         with open(raw_transcript_path, "w", encoding="utf-8") as f:
             f.write(raw_text)
             
@@ -471,7 +388,7 @@ def async_audit_pipeline(task_id, audio_path, agent_name, language, organization
         masking_result = redact_pii(labeled_text)
         redacted_text = masking_result["redacted_text"]
         
-        labeled_transcript_path = os.path.join(data_dir, "3_labeled_dialogue.txt")
+        labeled_transcript_path = os.path.join(data_dir, f"{task_id}_labeled_dialogue.txt")
         with open(labeled_transcript_path, "w", encoding="utf-8") as f:
             f.write(redacted_text)
             
@@ -517,7 +434,9 @@ def upload_audio():
         return jsonify({"success": False, "error": "No file selected"})
 
     if file:
-        upload_dir = os.path.join(PROJECT_ROOT, "data", "uploads")
+        # Use /tmp for ephemeral file storage on Cloud Run
+        # Audio files are deleted immediately after scoring — /tmp is sufficient
+        upload_dir = "/tmp/uploads"
         os.makedirs(upload_dir, exist_ok=True)
         
         # Generate temporary unique name
@@ -817,10 +736,22 @@ def download_summary_pdf():
     except Exception as e:
         return make_response(f"PDF creation failed: {e}", 500)
 
-# ================= RUN SERVER RUN =================
+# ================= DATABASE STATUS ENDPOINT =================
+
+@app.route('/api/db-status')
+@login_required
+def db_status():
+    """Returns live database health stats — useful for demos and monitoring."""
+    try:
+        stats = get_db_stats()
+        return jsonify(stats)
+    except Exception as e:
+        return jsonify({"status": "error", "error": str(e)}), 500
+
+
+# ================= RUN SERVER =================
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 7860))
-    # Initialize the data storage structures
-    initialize_audit_csv()
-    
+    # Ensure DB schema is up-to-date on startup
+    init_db()
     app.run(host='0.0.0.0', port=port, debug=True)

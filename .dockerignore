@@ -1,9 +1,9 @@
-# Version Control & Git
+# ── Version Control ────────────────────────────────────────────────────────
 .git
 .gitignore
 .dockerignore
 
-# Virtual Environment & Python Caches
+# ── Python ─────────────────────────────────────────────────────────────────
 venv/
 .venv/
 env/
@@ -14,24 +14,34 @@ __pycache__/
 backend/__pycache__/
 frontend/__pycache__/
 
-# Environment Variables & Local Configs
+# ── Environment & Local Config ─────────────────────────────────────────────
+# .env is NEVER shipped in the image — all secrets go via Cloud Run env vars
 .env
 .env.*
 *.code-workspace
 .vscode/
 .idea/
 
-# Jupyter & Notebook Checkpoints
+# ── Notebooks ──────────────────────────────────────────────────────────────
 .ipynb_checkpoints
 *.ipynb
 
-# Local Logs & Data Files
-*.log
-data/user_data/*
-data/uploads/*
-data/audit_results.csv
+# ── Local-only data files ──────────────────────────────────────────────────
+# SQLite DB and CSV are NOT used on Cloud Run (PostgreSQL is used instead)
 data/audit_system.db
+data/audit_results.csv
+data/users.json
+data/uploads/
+data/user_data/
+data/extracted_email.json
 
-# OS System Files
+# ── Migration scripts (not needed in production image) ─────────────────────
+migrate_to_db.py
+inspect_db.py
+
+# ── Logs ───────────────────────────────────────────────────────────────────
+*.log
+
+# ── OS files ───────────────────────────────────────────────────────────────
 .DS_Store
 Thumbs.db

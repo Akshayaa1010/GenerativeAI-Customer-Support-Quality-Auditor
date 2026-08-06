@@ -1,8 +1,83 @@
-1. Agents must always use professional and respectful language (no slang or aggression).
-2. Agents must provide accurate information regarding company products and services.
-3. Agents should actively listen and show empathy toward customer frustrations or issues.
-4. Agents must never disclose sensitive customer PII (like full credit card numbers) in plain text.
-5. Agents must provide a clear next step or resolution before ending the interaction.
-6. Agents must not make false promises or guarantee results that are outside of company policy.
-7. Any explicit refusal to help a customer without a valid policy reason is a compliance warning.
-8. Agents must avoid using offensive, discriminatory, or biased language.
+GLOBAL CUSTOMER SUPPORT POLICY AND AGENT EVALUATION FRAMEWORK
+
+===============================================================================
+1. DOCUMENT OVERVIEW AND PURPOSE
+===============================================================================
+This document establishes the official performance standards, compliance rules, 
+and operational procedures for all customer support agents. The guidelines 
+detailed below serve as the authoritative ground truth for automated QA 
+auditing, RAG contextual retrieval, and LLM compliance scoring.
+
+===============================================================================
+2. CORE INTERACTION STANDARDS
+===============================================================================
+
+[Rule 2.1] Greeting and Verification
+- Standard: Agents must greet the customer using the approved script within 
+  3 seconds of call connection. 
+- Verification: Agents must verify the customer's identity using at least two 
+  account identifiers (e.g., full name and account number) before disclosing 
+  any sensitive account details.
+- Approved Script: "Thank you for contacting Support. My name is [Agent Name]. 
+  How may I help you today?"
+
+[Rule 2.2] Communication Tone and Conduct
+- Professionalism: Agents must maintain a polite, professional, and empathetic 
+  tone throughout the entirety of the call.
+- Interruptions: Agents must not interrupt, speak over, or argue with a customer.
+- Hold Procedure: Before placing a customer on hold, the agent must explicitly 
+  ask for permission, state the reason for the hold, and limit total hold time 
+  to a maximum of 2 minutes without checking back in with the customer.
+
+[Rule 2.3] Escalation Pathways
+- Tier 1 Boundaries: Tier 1 agents handle general account inquiries, basic 
+  troubleshooting, and billing explanations.
+- Tier 2 Escalation: Agents must escalate the call to Tier 2 immediately if 
+  the issue involves a security breach, complex technical bugs, or an explicit 
+  supervisor request from the customer.
+- De-escalation: If a customer is abusive or uses profanity, the agent must 
+  issue exactly one clear warning before initiating a structured call 
+  termination or supervisor transfer.
+
+===============================================================================
+3. COMPLIANCE AND SECURITY (ZERO TOLERANCE)
+===============================================================================
+
+[Rule 3.1] PII and PCI Data Protection
+- Redaction: Agents must ensure that credit card CVV codes, full PINs, and 
+  passwords are never spoken aloud or documented in written call notes.
+- Authentication: No critical account modifications (email changes, password 
+  resets, shipping address updates) can be performed without successful 
+  multi-factor authentication (MFA) verification during the call.
+
+[Rule 3.2] Unauthorized Disclosures
+- Proprietary Info: Agents must never discuss internal software tools, 
+  proprietary server architectures, or corporate legal strategies with customers.
+
+===============================================================================
+4. LLM QA AUDIT SCORING RUBRIC
+===============================================================================
+This rubric defines the quantitative scoring parameters the automated LLM 
+auditor uses to grade transcripts against the policy details above.
+
+[Metric 4.1] Compliance Score (Weight: 40%)
+- Pass (100 points): Followed all verification and data protection rules 
+  perfectly.
+- Fail (0 points): Disclosed sensitive account information without verification 
+  or handled PII/PCI improperly. This constitutes a critical security violation.
+
+[Metric 4.2] Protocol Adherence Score (Weight: 30%)
+- Excellent (100 points): Used the correct greeting, asked permission for 
+  holds, and followed exact escalation rules.
+- Needs Improvement (50 points): Missed the standard greeting script or 
+  exceeded the 2-minute hold limit.
+- Unsatisfactory (0 points): Refused a direct request to escalate or failed to 
+  follow basic workflow steps.
+
+[Metric 4.3] Soft Skills and Sentiment Score (Weight: 30%)
+- Excellent (100 points): Demonstrated clear empathy, used positive phrasing, 
+  and actively listened without interrupting.
+- Needs Improvement (50 points): Tone was cold, transactional, or defensive, 
+  though not explicitly rude.
+- Unsatisfactory (0 points): Interrupted the customer repeatedly, argued, 
+  or used unprofessional language.

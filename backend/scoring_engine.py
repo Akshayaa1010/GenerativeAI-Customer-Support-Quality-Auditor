@@ -1,33 +1,50 @@
+"""
+backend/scoring_engine.py
+=========================
+LLM-based compliance scoring engine.
+Uses the ComplianceRAG system (Pinecone) to retrieve relevant policy rules
+before scoring each chunk / email, then persists results to SQLite via database.py.
+"""
+
 import os
 import sys
+import uuid
 import logging
-import pandas as pd
 import json
+import pandas as pd
 from groq import Groq
 from rag_compliance import ComplianceRAG
+from database import (
+    save_audit_rows,
+    create_audit_session,
+)
 
-# Get the project root directory
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-
 logger = logging.getLogger(__name__)
 
 client = Groq(api_key=os.getenv("GROQ_API_KEY"))
 
-# Lazy-loaded RAG system — initialized on first use to reduce startup memory
+# Lazy-loaded RAG system — initialised on first use to reduce startup memory
 _rag_system = None
 
+
 def get_rag_system():
-    """Return the shared ComplianceRAG instance, initializing it on first call."""
+    """Return the shared ComplianceRAG instance, initialising it on first call."""
     global _rag_system
     if _rag_system is None:
-        logger.info("Initializing ComplianceRAG system (first use)...")
+        logger.info("Initialising ComplianceRAG system (first use)...")
         _rag_system = ComplianceRAG()
     return _rag_system
 
-def score_chunk(chunk_text):
-    # Retrieve specific rules for this part of the talk
+
+# ─────────────────────────────────────────────
+# Chunk Scoring (Audio calls)
+# ─────────────────────────────────────────────
+
+def score_chunk(chunk_text: str) -> dict:
+    """Score a single conversation chunk using the LLM + RAG rules."""
     relevant_rules = get_rag_system().get_rules_for_context(chunk_text)
-    
+
     prompt = f"""
     Evaluate this chunk based on these specific rules:
     {relevant_rules}
@@ -45,22 +62,40 @@ def score_chunk(chunk_text):
       "suggestions": ["List specific improvement suggestions"]
     }}
     """
-    
+
     response = client.chat.completions.create(
         model="llama-3.3-70b-versatile",
         messages=[{"role": "user", "content": prompt}],
-        response_format={ "type": "json_object" }
+        response_format={"type": "json_object"},
     )
     return json.loads(response.choices[0].message.content)
 
-def score_email(email_text, agent_name="Unknown Agent", filename=None, organization="Default", **kwargs):
-    logger.debug(f"score_email called with filename={filename}")
+
+# ─────────────────────────────────────────────
+# Email Scoring
+# ─────────────────────────────────────────────
+
+def score_email(
+    email_text: str,
+    agent_name: str = "Unknown Agent",
+    filename: str = None,
+    organization: str = "Default",
+    **kwargs,
+) -> dict:
+    """
+    Score an email, redact PII, persist results to the database,
+    and return the LLM result dict.
+    """
+    from datetime import datetime
+
     if filename is None:
-        from datetime import datetime
         filename = f"Email_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
-    # Retrieve specific rules for email context
+
+    logger.debug("score_email called — agent=%s filename=%s", agent_name, filename)
+
+    # 1. RAG-grounded LLM scoring
     relevant_rules = get_rag_system().get_rules_for_context(email_text)
-    
+
     prompt = f"""
     Evaluate this customer service email based on these specific rules:
     {relevant_rules}
@@ -78,193 +113,203 @@ def score_email(email_text, agent_name="Unknown Agent", filename=None, organizat
       "suggestions": ["List specific improvement suggestions"]
     }}
     """
-    
+
     response = client.chat.completions.create(
         model="llama-3.3-70b-versatile",
         messages=[{"role": "user", "content": prompt}],
-        response_format={ "type": "json_object" }
+        response_format={"type": "json_object"},
     )
     result = json.loads(response.choices[0].message.content)
 
-    # 1. Redact Email Content
+    # 2. Redact PII from email text
     from redaction import redact_pii
     masking_result = redact_pii(email_text)
-    
-    # Save to CSV
-    csv_path = os.path.join(PROJECT_ROOT, "data", "audit_results.csv")
-    column_order = ['Chunk', 'empathy', 'professionalism', 'compliance', 'reason', 'violations', 'suggestions', 'evaluation', 'Agent', 'masking_score', 'masking_analysis', 'Source', 'Transcript', 'Filename', 'Organization']
-    
-    new_row = {
-        'Chunk': 'EMAIL', # Identifying this as an email audit
-        'Source': 'Email',
-        'empathy': result['empathy'],
-        'professionalism': result['professionalism'],
-        'compliance': result['compliance'],
-        'reason': result['reason'],
-        'violations': "|".join(result['violations']),
-        'suggestions': "|".join(result['suggestions']),
-        'evaluation': json.dumps(result),
-        'Agent': agent_name,
-        'masking_score': masking_result['masking_score'],
-        'masking_analysis': masking_result['analysis'],
-        'Transcript': masking_result['redacted_text'],
-        'Filename': filename,
-        'Organization': organization
+
+    # 3. Create an audit session record
+    session_uuid = str(uuid.uuid4())
+    session_id = create_audit_session(
+        session_uuid=session_uuid,
+        agent_name=agent_name,
+        source="Email",
+        filename=filename,
+        organization=organization,
+    )
+
+    # 4. Build DB rows — one EMAIL row + one FINAL row for dashboard consistency
+    base_row = {
+        "session_id": session_id,
+        "agent": agent_name,
+        "empathy": result.get("empathy"),
+        "professionalism": result.get("professionalism"),
+        "compliance": result.get("compliance"),
+        "reason": result.get("reason"),
+        "violations": "|".join(result.get("violations", [])),
+        "suggestions": "|".join(result.get("suggestions", [])),
+        "evaluation": json.dumps(result),
+        "masking_score": masking_result.get("masking_score", 100),
+        "masking_analysis": masking_result.get("analysis", ""),
+        "source": "Email",
+        "transcript": masking_result.get("redacted_text", ""),
+        "filename": filename,
+        "organization": organization,
     }
-    
-    # Append to cumulative results
-    df = pd.DataFrame([new_row])[column_order]
-    
-    # Also add a FINAL row for this email to make it consistent with the dashboard's "FINAL" logic
-    final_row = new_row.copy()
-    final_row['Chunk'] = 'FINAL'
-    final_df = pd.DataFrame([final_row])[column_order]
-    
-    full_df = pd.concat([df, final_df])
-    
-    # Append to cumulative results (Safe horizontal concat)
-    if os.path.exists(csv_path):
-        existing_df = pd.read_csv(csv_path)
-        for col in column_order:
-            if col not in existing_df.columns:
-                existing_df[col] = None
-        full_df = pd.concat([existing_df[column_order], full_df[column_order]], ignore_index=True)
-        full_df.to_csv(csv_path, index=False)
-    else:
-        full_df[column_order].to_csv(csv_path, index=False)
-        
+
+    email_row = {**base_row, "chunk": "EMAIL"}
+    final_row = {**base_row, "chunk": "FINAL"}
+
+    save_audit_rows([email_row, final_row], session_id=session_id)
+    logger.info("Email audit saved to DB — session_uuid=%s", session_uuid)
+
     return result
 
-def run_average_audit(file_path, agent_name="Unknown Agent", masking_score=100, masking_analysis="", filename=None, redacted_transcript=None, organization="Default"):
+
+# ─────────────────────────────────────────────
+# Full Audio Call Audit Pipeline
+# ─────────────────────────────────────────────
+
+def run_average_audit(
+    file_path: str,
+    agent_name: str = "Unknown Agent",
+    masking_score: int = 100,
+    masking_analysis: str = "",
+    filename: str = None,
+    redacted_transcript: str = None,
+    organization: str = "Default",
+):
+    """
+    Read a labeled dialogue file, score it in 5-turn chunks,
+    compute averages, and persist everything to the database.
+    """
     if filename is None:
         filename = os.path.basename(file_path)
-    # Handle both absolute and relative paths
+
     if not os.path.isabs(file_path):
         file_path = os.path.join(PROJECT_ROOT, file_path)
-    
+
     with open(file_path, "r", encoding="utf-8") as f:
-        lines = [line.strip() for line in f.readlines() if line.strip().startswith(('Agent:', 'Customer:'))]
-    
-    # Use the redacted transcript if provided, otherwise fall back to joined lines
+        lines = [
+            line.strip()
+            for line in f.readlines()
+            if line.strip().startswith(("Agent:", "Customer:"))
+        ]
+
     if redacted_transcript is None:
         redacted_transcript = "\n".join(lines)
 
-    # Process in chunks of 5 turns
+    # 1. Score each 5-turn chunk
     chunk_results = []
     for i in range(0, len(lines), 5):
-        chunk = "".join(lines[i:i+5])
+        chunk = "".join(lines[i : i + 5])
         chunk_results.append(score_chunk(chunk))
 
-    # Create DataFrame with chunk results
     df = pd.DataFrame(chunk_results)
-    
-    # Add Chunk and Agent columns in correct order
-    df.insert(0, 'Chunk', range(1, len(df) + 1))
-    df['Agent'] = agent_name
-    
-    # Convert violations and suggestions lists to strings for CSV
-    if 'violations' in df.columns:
-        df['violations'] = df['violations'].apply(lambda x: ' | '.join(x) if isinstance(x, list) else str(x))
-    if 'suggestions' in df.columns:
-        df['suggestions'] = df['suggestions'].apply(lambda x: ' | '.join(x) if isinstance(x, list) else str(x))
-    
-    # Calculate averages
-    final_empathy = df['empathy'].mean()
-    final_professionalism = df['professionalism'].mean()
-    
-    # Determine overall compliance based on average scores
-    avg_score = (final_empathy + final_professionalism) / 2
-    if avg_score >= 80:
-        overall_compliance = "PASS"
-    elif avg_score >= 60:
-        overall_compliance = "WARN"
-    else:
-        overall_compliance = "FAIL"
-    
-    # Aggregate violations and suggestions
-    all_violations = []
-    all_suggestions = []
-    
-    if 'violations' in df.columns:
-        for vuln_str in df['violations']:
-            if pd.notna(vuln_str):
-                all_violations.extend([v.strip() for v in str(vuln_str).split('|')])
-    
-    if 'suggestions' in df.columns:
-        for sugg_str in df['suggestions']:
-            if pd.notna(sugg_str):
-                all_suggestions.extend([s.strip() for s in str(sugg_str).split('|')])
-    
-    # Remove duplicates
-    all_violations = list(set([v for v in all_violations if v]))
-    all_suggestions = list(set([s for s in all_suggestions if s]))
-    
-    # Reorder columns before saving
-    column_order = ['Chunk', 'empathy', 'professionalism', 'compliance', 'reason', 'violations', 'suggestions', 'evaluation', 'Agent', 'masking_score', 'masking_analysis', 'Source', 'Transcript', 'Filename', 'Organization']
-    
-    # Create final results row
-    final_row_data = {
-        'Agent': agent_name,
-        'Chunk': 'FINAL',
-        'empathy': final_empathy,
-        'professionalism': final_professionalism,
-        'compliance': overall_compliance,
-        'reason': 'Final average scores',
-        'violations': ' | '.join(all_violations) if all_violations else 'None',
-        'suggestions': ' | '.join(all_suggestions) if all_suggestions else 'None',
-        'evaluation': None,
-        'masking_score': masking_score,
-        'masking_analysis': masking_analysis,
-        'Source': 'Audio',
-        'Transcript': redacted_transcript,
-        'Filename': filename,
-        'Organization': organization
-    }
-    final_df = pd.DataFrame([final_row_data])
-    
-    # Ensure chunks df has all columns
-    for col in column_order:
-        if col not in df.columns:
-            df[col] = None
-    
-    # Update chunk df with masking info too
-    df['masking_score'] = masking_score
-    df['masking_analysis'] = masking_analysis
-    df['Source'] = 'Audio'
-    df['Transcript'] = redacted_transcript
-    df['Filename'] = filename
-    df['Organization'] = organization
-            
-    # Standardize chunk df and concat with final
-    df = pd.concat([df[column_order], final_df[column_order]], ignore_index=True)
-    
-    # Save to CSV (Cumulative)
-    csv_filename = os.path.join(PROJECT_ROOT, "data", "audit_results.csv")
-    if os.path.exists(csv_filename):
-        existing_df = pd.read_csv(csv_filename)
-        # Standardize existing_df to avoid concat issues
-        for col in column_order:
-            if col not in existing_df.columns:
-                existing_df[col] = None
-        df = pd.concat([existing_df[column_order], df], ignore_index=True)
-        
-    df.to_csv(csv_filename, index=False)
-    logger.info(f"CSV file saved: {csv_filename}")
 
-    # Log final audit results
-    logger.info(f"--- FINAL AUDIT RESULTS FOR {agent_name} ---")
-    logger.info(f"Final Empathy Score: {final_empathy}")
-    logger.info(f"Final Professionalism Score: {final_professionalism}")
-    logger.info(f"Overall Compliance: {overall_compliance}")
-    
+    # 2. Compute averages
+    final_empathy = df["empathy"].mean()
+    final_professionalism = df["professionalism"].mean()
+    avg_score = (final_empathy + final_professionalism) / 2
+    overall_compliance = (
+        "PASS" if avg_score >= 80 else "WARN" if avg_score >= 60 else "FAIL"
+    )
+
+    # 3. Aggregate violations / suggestions
+    def _join_col(series):
+        items = []
+        for val in series:
+            if isinstance(val, list):
+                items.extend(val)
+            elif pd.notna(val):
+                items.extend([v.strip() for v in str(val).split("|")])
+        return list(set(v for v in items if v))
+
+    all_violations = _join_col(df.get("violations", pd.Series(dtype=str)))
+    all_suggestions = _join_col(df.get("suggestions", pd.Series(dtype=str)))
+
+    # 4. Create audit session record
+    session_uuid = str(uuid.uuid4())
+    session_id = create_audit_session(
+        session_uuid=session_uuid,
+        agent_name=agent_name,
+        source="Audio",
+        filename=filename,
+        organization=organization,
+    )
+
+    # 5. Build rows to save
+    common = dict(
+        session_id=session_id,
+        agent=agent_name,
+        masking_score=masking_score,
+        masking_analysis=masking_analysis,
+        source="Audio",
+        transcript=redacted_transcript,
+        filename=filename,
+        organization=organization,
+    )
+
+    rows_to_save = []
+    for idx, row in df.iterrows():
+        violations_str = (
+            " | ".join(row["violations"])
+            if isinstance(row.get("violations"), list)
+            else str(row.get("violations", ""))
+        )
+        suggestions_str = (
+            " | ".join(row["suggestions"])
+            if isinstance(row.get("suggestions"), list)
+            else str(row.get("suggestions", ""))
+        )
+        rows_to_save.append({
+            **common,
+            "chunk": str(idx + 1),
+            "empathy": row.get("empathy"),
+            "professionalism": row.get("professionalism"),
+            "compliance": row.get("compliance"),
+            "reason": row.get("reason"),
+            "violations": violations_str,
+            "suggestions": suggestions_str,
+            "evaluation": None,
+        })
+
+    # FINAL summary row
+    rows_to_save.append({
+        **common,
+        "chunk": "FINAL",
+        "empathy": final_empathy,
+        "professionalism": final_professionalism,
+        "compliance": overall_compliance,
+        "reason": "Final average scores",
+        "violations": " | ".join(all_violations) if all_violations else "None",
+        "suggestions": " | ".join(all_suggestions) if all_suggestions else "None",
+        "evaluation": None,
+    })
+
+    save_audit_rows(rows_to_save, session_id=session_id)
+
+    logger.info("--- FINAL AUDIT RESULTS FOR %s ---", agent_name)
+    logger.info("Final Empathy:         %.2f", final_empathy)
+    logger.info("Final Professionalism: %.2f", final_professionalism)
+    logger.info("Overall Compliance:    %s", overall_compliance)
+    logger.info("Saved to DB — session_uuid=%s", session_uuid)
+
+    # Return a DataFrame in the same shape as before for backward compatibility
     return df
 
+
+# ─────────────────────────────────────────────
+# CLI entry point
+# ─────────────────────────────────────────────
+
 if __name__ == "__main__":
-    import sys
-    agent = sys.argv[2] if len(sys.argv) > 2 else "Sample Agent"
+    import sys as _sys
+
+    agent = _sys.argv[2] if len(_sys.argv) > 2 else "Sample Agent"
     target_file = os.path.join(PROJECT_ROOT, "data", "3_labeled_dialogue.txt")
-    
+
     if os.path.exists(target_file):
         run_average_audit(target_file, agent)
     else:
-        print(f"Error: {target_file} not found. Please run the full pipeline or process an email/audio first.")
+        print(
+            f"Error: {target_file} not found. "
+            "Please run the full pipeline or process an email/audio first."
+        )

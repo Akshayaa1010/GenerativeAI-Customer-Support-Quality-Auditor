@@ -5,6 +5,9 @@ gunicorn>=21.2.0
 werkzeug>=3.0.0
 python-dotenv>=1.0.0
 
+# Database (PostgreSQL — Cloud Run / Cloud SQL)
+psycopg2-binary>=2.9.9
+
 # AI Models & LLM Integration
 groq>=0.4.0
 pinecone>=3.2.2
