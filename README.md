@@ -1,152 +1,154 @@
-# 📊 Quality Compliance Auditor Pro
+# Call Quality Auditor
 
-A full-stack, AI-driven **Customer Support Quality & Compliance Auditor**. Built with Python (Flask), Groq (Llama-3.3 70B & Whisper-v3), Pinecone Vector Database (RAG), SpaCy NLP, and a modern Vanilla CSS/JS Glassmorphism UI.
+An admin dashboard for customer-support managers. Upload a recorded support
+call, and the AI scores the employee against your company policy. The
+dashboard shows each employee's scores, the rules they break most often, and
+an AI-generated coaching plan for the team.
 
-The platform automates quality scoring, empathy & professionalism evaluation, PII masking, and compliance policy verification across both **Call Audio Recordings** and **Email Support Threads**.
+**Live app:** https://call-quality-auditor.onrender.com (admin login required).
+On Render's free plan the app sleeps after 15 minutes without visitors, so the
+first page load after a break can take up to a minute.
 
----
+**Try it:** the [samples/](samples/) folder has seven recorded test calls,
+each with the outcome it should get (PASS, WARN or FAIL).
 
-## ✨ Key Features
+## How a call is audited
 
-### 🔐 Multi-Tenant User Authentication & Organization Isolation
-- **Self-Service Registration**: Users can register directly from the login interface with their Username, Password, and Organization Name.
-- **Tenant Data Isolation**: Audits, performance leaderboards, team analytics, agent deep-dives, and CSV/PDF downloads are strictly isolated by the logged-in user's Organization.
-- **Secure Hashing**: User passwords are saved with SHA-256 encryption in local user storage (`data/users.json`).
+```
+audio file
+  → Groq Whisper            speech to text
+  → PII redaction           names, phones, cards, Aadhaar, IFSC, emails removed
+  → Groq LLM                label each line as Agent or Customer
+  → RAG (Pinecone)          find the policy rules relevant to this call
+  → Groq LLM                pass / fail / not applicable per rule, with evidence;
+                            empathy and professionalism ratings
+  → scoring (Python)        weighted score and PASS / WARN / FAIL outcome
+  → database                shown on the dashboard
+```
 
-### 🌓 Dark Mode & Light Mode Theme Switcher
-- **Instant Theme Toggle**: Switch seamlessly between Dark Mode and Light Mode from either the Login Page or Dashboard header.
-- **Zero-Flash Persistence**: User theme preferences are automatically saved in `localStorage` and applied before rendering.
+Personal data is redacted **before** any text is sent to an LLM.
 
-### 📧 IMAP Email Extractor & AI Compliance Auditor
-- **IMAP Server Integration**: Directly retrieve customer support emails from IMAP mail servers (Gmail, Outlook, etc.).
-- **Manual Email Audit**: Instant evaluation of pasted email content.
-- **RAG Policy Verification**: Scores empathy, professionalism, and policy compliance using Groq Llama-3.3 70B and Pinecone vector search.
+### Scoring
 
-### 🎙️ Audio Call Auditing & PII Redaction
-- **Groq Whisper-v3 Transcription**: Fast, accurate speech-to-text conversion for call audio recordings.
-- **Dialogue Diarization**: Automatic turn-by-turn labeling between `Agent` and `Customer`.
-- **SpaCy PII Masking**: Detects and redacts sensitive PII (names, Aadhaar numbers, phone numbers, card numbers, emails) prior to audit logging.
+The LLM only makes judgements. The numbers are calculated in
+[backend/scoring.py](backend/scoring.py) using the weights in section 4 of
+[data/policy.txt](data/policy.txt):
 
-### 📈 Interactive Analytics & Coaching Roadmap
-- **ApexCharts Dashboard**: Real-time team averages, top policy violation frequencies, and agent performance comparisons.
-- **AI Coaching Roadmap**: Clusters team-wide mistakes into structured training modules exportable as PDF reports.
-- **Data Exporting**: Download organization-isolated audit logs in CSV format or formatted PDF summary reports.
+| Part | Weight | How it is calculated |
+|---|---|---|
+| Compliance | 40% | 100, or 0 if any zero-tolerance rule (section 3) was broken |
+| Protocol | 30% | share of the other applicable rules that were followed |
+| Soft skills | 30% | average of empathy and professionalism (0–100) |
 
----
+Outcome: **FAIL** if a zero-tolerance rule was broken, **WARN** if any other
+rule was broken, otherwise **PASS**.
 
-## 🛠️ Technology Stack
+### Policy retrieval (RAG)
 
-- **Backend**: Python 3.10+, Flask, Gunicorn WSGI Server, Pandas, SpaCy, FPDF2
-- **AI Engine**: Groq (Llama-3.3-70b-versatile & Whisper-v3)
-- **Vector Search (RAG)**: Pinecone, LangChain
-- **Frontend**: Vanilla HTML5, CSS3 (Glassmorphism Design System), JavaScript (ES6+), Lucide Icons, ApexCharts
-- **Email Extraction**: Python `imaplib` SSL client & BeautifulSoup4
+[backend/rag.py](backend/rag.py) embeds every rule in `policy.txt` with
+Pinecone's hosted `multilingual-e5-large` model and stores the vectors in a
+Pinecone index. The index is created and filled automatically the first time
+a call is audited, and refilled whenever `policy.txt` changes. For each call,
+the transcript is split into windows of a few turns, and the closest rules to
+each window are retrieved. Zero-tolerance rules are always checked. If
+Pinecone is not configured, every rule is checked.
 
----
+To change the policy, edit `data/policy.txt`. Rules are written as
+`[Rule X.Y] Title` followed by their text. Rules in a section whose heading
+contains "ZERO TOLERANCE" are treated as critical.
 
-## 🚀 Quick Start
+## Project structure
 
-### 1. Prerequisites & Installation
+```
+app.py                  Flask routes (pages + JSON API)
+backend/
+  config.py             settings read from the environment / .env
+  policy.py             parses policy.txt into rules
+  rag.py                Pinecone indexing and retrieval of relevant rules
+  redaction.py          PII redaction
+  llm.py                Groq client (Whisper + chat)
+  scoring.py            speaker labelling, AI evaluation, score calculation, coaching plan
+  pipeline.py           runs the audit steps in the background
+  database.py           SQLite (local) / PostgreSQL (production)
+frontend/
+  templates/            login.html, dashboard.html
+  static/               app.js, styles.css
+data/policy.txt         the company policy the AI audits against
+samples/                seven test calls (.wav) and their expected outcomes
+tests/                  unit tests (no network needed)
+Dockerfile              production image (gunicorn)
+render.yaml             Render deployment settings
+cloudbuild.yaml         Google Cloud Run deployment (alternative)
+```
 
-Clone the repository and install dependencies:
+## Services used
+
+| Service | Used for | Free tier |
+|---|---|---|
+| [Groq](https://console.groq.com) | Whisper speech-to-text and the `openai/gpt-oss-120b` LLM | Yes |
+| [Pinecone](https://www.pinecone.io) | Policy embeddings (`multilingual-e5-large`) and vector search | Yes |
+| [Neon](https://neon.tech) | PostgreSQL database in production | Yes |
+| [Render](https://render.com) | Hosting the Docker container | Yes |
+
+## Run locally
+
+Requires Python 3.12.
 
 ```bash
-# Install required Python dependencies
-pip install -r requirements.txt
-
-# Download SpaCy English NLP model for PII redaction
+python -m venv .venv
+.venv\Scripts\activate          # Windows  (macOS/Linux: source .venv/bin/activate)
+pip install -r requirements-dev.txt     # app + test tools
 python -m spacy download en_core_web_sm
-```
-
-### 2. Environment Configuration
-
-Create a `.env` file in the project root directory:
-
-```env
-# Core API Keys
-GROQ_API_KEY=your_groq_api_key_here
-PINECONE_API_KEY=your_pinecone_api_key_here
-
-# (Optional) Default Admin Credentials
-AUTH_USERNAME=admin
-AUTH_PASSWORD=admin123
-
-# (Optional) IMAP Email Extraction Credentials
-IMAP_SERVER=imap.gmail.com
-IMAP_PORT=993
-IMAP_EMAIL=your_support_email@gmail.com
-IMAP_PASSWORD=your_app_password
-```
-
-### 3. Running Locally
-
-Start the Flask development server:
-
-```bash
+copy .env.example .env          # then fill in the values
 python app.py
 ```
 
-Open your browser and navigate to:
-👉 **[http://127.0.0.1:7860](http://127.0.0.1:7860)**
+Open http://127.0.0.1:7860 and sign in with `ADMIN_USERNAME` / `ADMIN_PASSWORD` from `.env`.
+Without `DATABASE_URL`, audits are stored in a local SQLite file (`data/auditor.db`).
 
----
-
-## 🐳 Docker Containerization & Deployment
-
-### Running with Docker Locally
-
-Build and start the container using the included `Dockerfile`:
+Run the tests:
 
 ```bash
-# Build Docker Image
-docker build -t compliance-auditor-pro .
-
-# Run Docker Container
-docker run -p 7860:7860 --env-file .env compliance-auditor-pro
+python -m pytest
 ```
 
-### Deploying to Cloud Hosting (Railway / Render / Hugging Face Spaces)
+## Settings
 
-1. Push your repository to GitHub.
-2. Link the repository to your hosting provider (e.g., Railway or Render).
-3. Add environment variables (`GROQ_API_KEY`, `PINECONE_API_KEY`, etc.) in your provider's project dashboard.
-4. The deployment will automatically build using the `Dockerfile` and serve the application via **Gunicorn WSGI**.
+| Variable | Required | Purpose |
+|---|---|---|
+| `ADMIN_USERNAME`, `ADMIN_PASSWORD` | yes | the single admin login |
+| `FLASK_SECRET_KEY` | yes in production | signs the login cookie |
+| `GROQ_API_KEY` | yes | transcription and AI scoring |
+| `PINECONE_API_KEY` | recommended | policy retrieval; without it every rule is checked |
+| `DATABASE_URL` | yes in production | PostgreSQL connection string (e.g. Neon) |
+| `GROQ_LLM_MODEL`, `GROQ_WHISPER_MODEL` | no | override the default models |
 
----
+## Deploy to Render (current hosting)
 
-## 📂 Project Structure
+[render.yaml](render.yaml) describes the service: it builds the Dockerfile on the
+free plan, checks `/healthz`, and generates `FLASK_SECRET_KEY`.
 
-```
-.
-├── app.py                      # Main Flask application & REST endpoints
-├── backend/                    # Core AI & auditing backend modules
-│   ├── clean_transcript.py     # Diarization & speaker turn labeling
-│   ├── extract_emails.py       # IMAP email extraction engine
-│   ├── pipeline.py             # Audio-to-audit orchestration pipeline
-│   ├── rag_compliance.py       # Pinecone vector RAG policy retriever
-│   ├── redaction.py            # SpaCy PII masking & regex sanitizer
-│   ├── scoring_engine.py       # Groq Llama-3 scoring & audit persistence
-│   ├── transcribe.py           # Groq Whisper-v3 audio transcription engine
-│   ├── upload_policies.py     # Script to upload policy rules to Pinecone
-│   └── test_redaction.py       # Test suite for PII redaction rules
-├── frontend/                   # Single-page web application frontend
-│   ├── static/                 # Static web assets
-│   │   ├── css/styles.css      # CSS design system & light/dark theme tokens
-│   │   └── js/app.js           # Single-page app router, ApexCharts & theme toggler
-│   └── templates/              # Jinja2 HTML templates
-│       ├── dashboard.html      # Main compliance auditing dashboard
-│       └── login.html          # Authentication & user registration view
-├── data/                       # Storage directory for audit logs & user DB
-├── Dockerfile                  # Production Docker container configuration
-├── .dockerignore               # Container build exclusion rules
-├── deployment_guide.md         # Production deployment instructions
-└── requirements.txt            # Python package dependencies
-```
+1. Create a free PostgreSQL database on [Neon](https://neon.tech) and copy its connection string.
+2. On Render choose **New → Blueprint**, connect this GitHub repository and pick the
+   branch named in `render.yaml`.
+3. Enter `ADMIN_USERNAME`, `ADMIN_PASSWORD`, `GROQ_API_KEY`, `PINECONE_API_KEY`
+   and `DATABASE_URL` when asked, then click **Apply**.
 
----
+Every push to that branch redeploys automatically. The app refuses to start in
+production without `DATABASE_URL`, because the container's disk is wiped on restart.
 
-## 🔒 Security & Data Privacy
+## Deploy to Google Cloud Run (alternative)
 
-- **PII Masking**: Sensitive customer PII is automatically redacted before audit results are saved.
-- **Encrypted Password Storage**: User passwords are saved with SHA-256 hashing.
-- **Multi-Tenant Boundaries**: Session-based organization filtering prevents cross-tenant data leakage.
+1. Create a PostgreSQL database and copy its connection URL.
+2. Create these secrets in Secret Manager: `DATABASE_URL`, `FLASK_SECRET_KEY`,
+   `ADMIN_USERNAME`, `ADMIN_PASSWORD`, `GROQ_API_KEY`, `PINECONE_API_KEY`.
+3. Connect the repository to a Cloud Build trigger that uses `cloudbuild.yaml`.
+
+## Known limitations
+
+- Speaker labels (Agent / Customer) come from the LLM reading the text, not from
+  the audio, so a line is occasionally attributed to the wrong speaker.
+- Name redaction combines spaCy with context rules ("my name is …", "Mr. …",
+  verification answers). Names mentioned in other ways can still slip through.
+- Audits run in a background thread. If the server restarts mid-audit, that
+  audit is marked failed after 30 minutes and must be uploaded again.

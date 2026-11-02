@@ -1,16 +1,25 @@
+# Render Blueprint: deploys the app from the Dockerfile on Render's free plan.
+# Create it at https://dashboard.render.com/blueprints → New Blueprint Instance.
 services:
   - type: web
-    name: compliance-auditor-backend
-    env: docker
+    name: call-quality-auditor
+    runtime: docker
     plan: free
+    branch: admin-dashboard-rework
     dockerfilePath: ./Dockerfile
-    healthCheckPath: /api/user-info
+    healthCheckPath: /healthz
+    autoDeploy: true            # redeploy on every push to the branch above
     envVars:
+      - key: FLASK_SECRET_KEY
+        generateValue: true     # Render creates a random value
+      # sync: false = Render asks you for the value when the Blueprint is created
+      - key: ADMIN_USERNAME
+        sync: false
+      - key: ADMIN_PASSWORD
+        sync: false
       - key: GROQ_API_KEY
         sync: false
       - key: PINECONE_API_KEY
         sync: false
-      - key: FLASK_SECRET_KEY
-        generateValue: true
-      - key: PYTHONUNBUFFERED
-        value: "1"
+      - key: DATABASE_URL
+        sync: false

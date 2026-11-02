@@ -46,18 +46,21 @@ COPY --from=builder /usr/local/bin /usr/local/bin
 # Copy application code
 COPY . .
 
-# Cloud Run writes uploaded files to /tmp (ephemeral, instance-local)
-# Audio files are processed then deleted immediately — /tmp is sufficient
-RUN mkdir -p /tmp/uploads
+# Run as a non-root user rather than root.
+# Uploaded audio goes to the system temp folder and is deleted after each audit.
+RUN useradd --uid 1000 --create-home appuser && chown -R appuser /app
+USER appuser
 
-# Cloud Run injects $PORT at runtime (default 8080)
+# Render and Cloud Run tell the app which port to use through $PORT (8080 if not set).
 EXPOSE 8080
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Gunicorn — production WSGI server
 #
-# --workers 2        : 2 processes (Cloud Run min memory 512MB handles this)
-# --threads 4        : 4 threads per worker for I/O-bound LLM calls
+# --workers 1        : one process keeps memory low (spaCy is loaded per process).
+#                      Audit progress is stored in the database, so more workers
+#                      or instances are safe if you need them.
+# --threads 8        : 8 threads for I/O-bound LLM calls
 # --timeout 300      : audio transcription + scoring can take 2-3 minutes
 # --preload          : import app once before forking — catches startup errors
 # --access-logfile - : log to stdout (Cloud Run captures stdout → Cloud Logging)
@@ -65,8 +68,8 @@ EXPOSE 8080
 # ─────────────────────────────────────────────────────────────────────────────
 CMD exec gunicorn \
     --bind 0.0.0.0:${PORT:-8080} \
-    --workers 2 \
-    --threads 4 \
+    --workers 1 \
+    --threads 8 \
     --timeout 300 \
     --preload \
     --keep-alive 5 \

@@ -1,757 +1,246 @@
+"""
+Call Quality Auditor — admin dashboard.
+
+The admin uploads recorded support calls, the AI scores each call against
+the company policy, and the dashboard shows how every employee is doing.
+
+Routes
+  /login, /logout, /dashboard           pages
+  POST /api/audits                      upload a call recording to audit
+  GET  /api/audits/<id>/status          progress of a running audit
+  GET  /api/audits/<id>                 full result of one audit
+  GET  /api/overview                    team-wide numbers for the home page
+  GET  /api/agents/<name>               one employee's numbers and audits
+  POST /api/coaching-roadmap            AI training plan from common mistakes
+  GET  /api/export.csv                  all completed audits as CSV
+  GET  /healthz                         health check for Cloud Run
+"""
+
+import csv
+import hmac
+import io
+import logging
 import os
+import secrets
 import sys
 import uuid
-import json
-import logging
-import pandas as pd
-from datetime import datetime
-from threading import Thread
-from flask import Flask, request, jsonify, render_template, redirect, url_for, session, send_file, make_response
-from dotenv import load_dotenv
+from functools import wraps
 
-# Get the project root directory
-PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
-sys.path.append(PROJECT_ROOT)
-sys.path.append(os.path.join(PROJECT_ROOT, "backend"))
+from flask import Flask, jsonify, make_response, redirect, render_template, request, session, url_for
+from werkzeug.utils import secure_filename
 
-# Load environment variables — kept for local development; production uses Cloud Run env vars
-load_dotenv(os.path.join(PROJECT_ROOT, ".env"))
+from backend import config, database
+from backend.pipeline import start_audit_in_background
+from backend.scoring import generate_coaching_roadmap
 
-# Configure logging for production
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
-    stream=sys.stdout,
-)
+logging.basicConfig(level=logging.INFO, stream=sys.stdout,
+                    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s")
 logger = logging.getLogger(__name__)
 
-# Flask App Initializer with custom directories
-app = Flask(
-    __name__, 
-    template_folder=os.path.join("frontend", "templates"),
-    static_folder=os.path.join("frontend", "static")
-)
-app.secret_key = os.environ.get("FLASK_SECRET_KEY", "compliance-auditor-pro-secret-key-1337")
-
-# Configure CORS for decoupled frontend deployment (Netlify/Vercel -> Northflank backend)
-BACKEND_URL = os.environ.get("BACKEND_URL", "https://customer-call-auditor--29hk88kg4w4g.code.run")
-try:
-    from flask_cors import CORS
-    CORS(app, supports_credentials=True, origins=[BACKEND_URL, "http://localhost:7860"])
-except ImportError:
-    pass
+LANGUAGES = {"auto": None, "en": "en", "hi": "hi", "ta": "ta", "es": "es", "fr": "fr"}
 
 
+def create_app() -> Flask:
+    if config.IS_PRODUCTION and not config.DATABASE_URL:
+        # The container's disk is wiped on every restart, so SQLite would lose all audits.
+        raise RuntimeError("DATABASE_URL must be set in production (e.g. a Neon Postgres URL).")
 
-# Global variables for background task monitoring
-TASKS = {}
+    app = Flask(__name__, template_folder="frontend/templates", static_folder="frontend/static")
+    app.secret_key = _load_secret_key()
+    app.config.update(
+        SESSION_COOKIE_HTTPONLY=True,
+        SESSION_COOKIE_SAMESITE="Lax",
+        SESSION_COOKIE_SECURE=config.IS_PRODUCTION,
+        MAX_CONTENT_LENGTH=config.MAX_UPLOAD_BYTES,
+    )
+    database.init_db()
+    database.fail_stale_audits()
+    os.makedirs(config.UPLOAD_DIR, exist_ok=True)
+    return app
 
-# Import backend modules
-from backend.scoring_engine import score_email, run_average_audit
-from backend.extract_emails import extract_selected_emails
-from backend.redaction import redact_pii
-from backend.database import (
-    init_db,
-    create_user as db_create_user,
-    authenticate_user as db_authenticate_user,
-    get_audit_dataframe,
-    get_db_stats,
-)
 
-# Fpdf2 import
-try:
-    from fpdf import FPDF
-except ImportError:
-    FPDF = None
+def _load_secret_key() -> str:
+    if config.FLASK_SECRET_KEY:
+        return config.FLASK_SECRET_KEY
+    if config.IS_PRODUCTION:
+        raise RuntimeError("FLASK_SECRET_KEY must be set in production.")
+    logger.warning("FLASK_SECRET_KEY is not set; using a temporary key (you will be logged out on restart).")
+    return secrets.token_hex(32)
 
-# PDF clean helper to prevent font errors
-def clean_pdf_text(text):
-    if not text: 
-        return ""
-    import string
-    allowed_chars = string.printable
-    cleaned = "".join(c for c in str(text) if c in allowed_chars)
-    cleaned = cleaned.replace('\u201c', '"').replace('\u201d', '"').replace('\u2018', "'").replace('\u2019', "'")
-    return cleaned
-# ================= USER STORAGE & AUTHENTICATION =================
-# Backed by SQLite via backend/database.py
-# Users are stored in the 'users' table with werkzeug password hashes.
 
-def create_user(username, password, organization):
-    """Create a new user in the SQLite database."""
-    return db_create_user(username, password, organization)
+app = create_app()
 
-def authenticate_user(username, password):
-    """Authenticate against SQLite users table (with env-var admin fallback)."""
-    env_user = os.getenv('AUTH_USERNAME', 'admin')
-    env_pass = os.getenv('AUTH_PASSWORD', 'admin123')
-    return db_authenticate_user(username, password, env_user, env_pass)
 
-# ================= AUTHENTICATION DECORATOR =================
-def login_required(f):
-    from functools import wraps
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        if 'logged_in' not in session:
-            return redirect(url_for('login'))
-        return f(*args, **kwargs)
-    return decorated_function
+# ================= Authentication =================
 
-# ================= CORE WEB ROUTING =================
-@app.route('/')
+def is_valid_admin(username: str, password: str) -> bool:
+    if not (config.ADMIN_USERNAME and config.ADMIN_PASSWORD):
+        return False
+    # compare_digest takes the same time whether or not the values match.
+    return (hmac.compare_digest(username.encode(), config.ADMIN_USERNAME.encode())
+            and hmac.compare_digest(password.encode(), config.ADMIN_PASSWORD.encode()))
+
+
+def login_required(view):
+    @wraps(view)
+    def wrapper(*args, **kwargs):
+        if not session.get("is_admin"):
+            if request.path.startswith("/api/"):
+                return jsonify({"error": "Not logged in"}), 401
+            return redirect(url_for("login"))
+        return view(*args, **kwargs)
+    return wrapper
+
+
+@app.route("/")
 def index():
-    if 'logged_in' in session:
-        return redirect(url_for('dashboard'))
-    return redirect(url_for('login'))
+    return redirect(url_for("dashboard" if session.get("is_admin") else "login"))
 
-@app.route('/login', methods=['GET', 'POST'])
+
+@app.route("/login", methods=["GET", "POST"])
 def login():
-    if request.method == 'POST':
-        username = request.form.get('username')
-        password = request.form.get('password')
-        
-        authenticated, organization = authenticate_user(username, password)
-        if authenticated:
-            session['logged_in'] = True
-            session['username'] = username
-            session['organization'] = organization
-            return redirect(url_for('dashboard'))
-        else:
-            return redirect(url_for('login', error=True))
-            
-    return render_template('login.html')
+    error = None
+    if not (config.ADMIN_USERNAME and config.ADMIN_PASSWORD):
+        error = "Admin account is not configured. Set ADMIN_USERNAME and ADMIN_PASSWORD."
+    elif request.method == "POST":
+        username = request.form.get("username", "")
+        password = request.form.get("password", "")
+        if is_valid_admin(username, password):
+            session.clear()
+            session["is_admin"] = True
+            session["username"] = username
+            return redirect(url_for("dashboard"))
+        error = "Invalid username or password"
+    return render_template("login.html", error=error)
 
-@app.route('/register', methods=['POST'])
-def register():
-    if request.is_json:
-        data = request.get_json()
-    else:
-        data = request.form
-        
-    username = data.get('username')
-    password = data.get('password')
-    organization = data.get('organization')
-    
-    if not username or not password or not organization:
-        if request.is_json:
-            return jsonify({"success": False, "error": "All fields are required"})
-        return redirect(url_for('login', error="All fields are required"))
-        
-    username = username.strip()
-    organization = organization.strip()
-    
-    if len(username) < 3:
-        if request.is_json:
-            return jsonify({"success": False, "error": "Username must be at least 3 characters"})
-        return redirect(url_for('login', error="Username too short"))
-        
-    if len(password) < 6:
-        if request.is_json:
-            return jsonify({"success": False, "error": "Password must be at least 6 characters"})
-        return redirect(url_for('login', error="Password too short"))
 
-    success, message = create_user(username, password, organization)
-    if success:
-        session['logged_in'] = True
-        session['username'] = username
-        session['organization'] = organization
-        
-        if request.is_json:
-            return jsonify({"success": True, "message": message})
-        return redirect(url_for('dashboard'))
-    else:
-        if request.is_json:
-            return jsonify({"success": False, "error": message})
-        return redirect(url_for('login', error=message))
-
-@app.route('/logout')
+@app.route("/logout")
 def logout():
     session.clear()
-    return redirect(url_for('login'))
+    return redirect(url_for("login"))
 
-@app.route('/dashboard')
+
+@app.route("/dashboard")
 @login_required
 def dashboard():
-    username = session.get('username', 'Administrator')
-    organization = session.get('organization', 'Default')
-    initials = (username[:2].upper()) if username else "AD"
-    return render_template('dashboard.html', username=username, organization=organization, initials=initials)
-
-@app.route('/api/user-info')
-def user_info():
-    if 'logged_in' in session:
-        username = session.get('username', 'Administrator')
-        organization = session.get('organization', 'Default')
-        initials = (username[:2].upper()) if username else "AD"
-        return jsonify({
-            "logged_in": True,
-            "username": username,
-            "organization": organization,
-            "initials": initials
-        })
-    return jsonify({"logged_in": False})
+    return render_template("dashboard.html", username=session["username"])
 
 
-# ================= COMPLIANCE DATA ACCESS HELPERS =================
-# Data is now stored in SQLite (data/audit_system.db) via backend/database.py
+@app.route("/healthz")
+def healthz():
+    return {"status": "ok"}
 
-def read_audit_data():
-    """Read audit results from SQLite, filtered by the logged-in user's org."""
-    try:
-        org = session.get('organization', None) if 'logged_in' in session else None
-        return get_audit_dataframe(organization=org)
-    except Exception as e:
-        logger.error(f"Error reading audit data from DB: {e}")
-        return pd.DataFrame()
 
-# Ensure DB schema exists on app startup
-init_db()
+# ================= Auditing calls =================
 
-# ================= REST API ENDPOINTS =================
+def _has_allowed_extension(filename: str) -> bool:
+    return "." in filename and filename.rsplit(".", 1)[1].lower() in config.ALLOWED_AUDIO_EXTENSIONS
 
-@app.route('/api/default-imap', methods=['GET'])
+
+@app.route("/api/audits", methods=["POST"])
 @login_required
-def default_imap():
+def upload_call():
+    audio = request.files.get("audio")
+    agent_name = request.form.get("agent_name", "").strip()
+    language = LANGUAGES.get(request.form.get("language", "auto"))
+
+    if not agent_name:
+        return jsonify({"error": "Enter the employee's name"}), 400
+    if audio is None or not audio.filename:
+        return jsonify({"error": "Choose an audio file"}), 400
+    if not _has_allowed_extension(audio.filename):
+        allowed = ", ".join(sorted(config.ALLOWED_AUDIO_EXTENSIONS))
+        return jsonify({"error": f"Unsupported file type. Allowed: {allowed}"}), 400
+    if not config.GROQ_API_KEY:
+        return jsonify({"error": "GROQ_API_KEY is not configured on the server"}), 503
+
+    filename = secure_filename(audio.filename)
+    audio_path = os.path.join(config.UPLOAD_DIR, f"{uuid.uuid4().hex}_{filename}")
+    audio.save(audio_path)
+
+    audit_id = database.create_audit(agent_name, filename)
+    start_audit_in_background(audit_id, audio_path, language)
+    return jsonify({"audit_id": audit_id}), 202
+
+
+@app.route("/api/audits/<int:audit_id>/status")
+@login_required
+def audit_status(audit_id):
+    status = database.get_audit_status(audit_id)
+    if status is None:
+        return jsonify({"error": "Audit not found"}), 404
+    return jsonify(status)
+
+
+@app.route("/api/audits/<int:audit_id>")
+@login_required
+def audit_detail(audit_id):
+    audit = database.get_audit(audit_id)
+    if audit is None:
+        return jsonify({"error": "Audit not found"}), 404
+    return jsonify(audit)
+
+
+# ================= Dashboard data =================
+
+@app.route("/api/overview")
+@login_required
+def overview():
     return jsonify({
-        "server": os.getenv("IMAP_SERVER", ""),
-        "port": os.getenv("IMAP_PORT", "993"),
-        "email": os.getenv("IMAP_EMAIL", "")
+        "team": database.team_summary(),
+        "agents": database.agent_leaderboard(),
+        "top_violations": database.top_violations(),
+        "recent_audits": database.list_audits(limit=10),
     })
 
-@app.route('/api/stats', methods=['GET'])
+
+@app.route("/api/agents/<path:agent_name>")
 @login_required
-def get_dashboard_stats():
-    df = read_audit_data()
-    if df.empty:
-        return jsonify({
-            "team_empathy_avg": 0.0,
-            "team_prof_avg": 0.0,
-            "total_audits": 0,
-            "agent_performances": [],
-            "top_violations": [],
-            "recent_audits": [],
-            "agents": []
-        })
-
-    # FINAL row holds overall scores for an audit session
-    team_final = df[df['Chunk'] == 'FINAL']
-    
-    avg_empathy = team_final['empathy'].mean() if not team_final.empty else 0.0
-    avg_prof = team_final['professionalism'].mean() if not team_final.empty else 0.0
-    total_audits = len(team_final)
-
-    # Agent summary metrics comparison
-    agent_performances = []
-    if not team_final.empty:
-        grouped = team_final.groupby('Agent')[['empathy', 'professionalism']].mean().reset_index()
-        agent_performances = grouped.to_dict(orient='records')
-
-    # Top violations frequency counts
-    all_violations = []
-    for v_str in team_final['violations']:
-        if pd.notna(v_str) and str(v_str).strip() != "None" and str(v_str).strip() != "":
-            all_violations.extend([v.strip() for v in str(v_str).split('|')])
-            
-    top_violations = []
-    if all_violations:
-        vc = pd.Series(all_violations).value_counts().head(5)
-        top_violations = [{"violation": v, "count": int(c)} for v, c in vc.items()]
-
-    # Recent completed audits history
-    recent_audits = []
-    if not team_final.empty:
-        # Sort descending by index (most recent first) and select up to 15
-        summary_raw = team_final[['Agent', 'empathy', 'professionalism', 'compliance', 'Source']].copy()
-        summary_raw = summary_raw.replace("None", pd.NA).dropna(subset=['Agent', 'empathy', 'professionalism'])
-        # Show recent items
-        recent_audits = summary_raw.tail(15).to_dict(orient='records')
-        recent_audits.reverse()
-
-    # List of all unique agents
-    agents_list = sorted(df['Agent'].dropna().unique().tolist())
-
+def agent_detail(agent_name):
     return jsonify({
-        "team_empathy_avg": float(avg_empathy),
-        "team_prof_avg": float(avg_prof),
-        "total_audits": int(total_audits),
-        "agent_performances": agent_performances,
-        "top_violations": top_violations,
-        "recent_audits": recent_audits,
-        "agents": agents_list
+        "summary": database.agent_summary(agent_name),
+        "top_violations": database.top_violations(agent_name),
+        "audits": database.list_audits(agent_name, limit=50),
     })
 
-@app.route('/api/agent-metrics/<agent_name>', methods=['GET'])
+
+@app.route("/api/coaching-roadmap", methods=["POST"])
 @login_required
-def get_agent_metrics(agent_name):
-    df = read_audit_data()
-    if df.empty:
-        return jsonify({"success": False, "error": "No audit records found"})
-
-    agent_data = df[df['Agent'] == agent_name]
-    agent_final = agent_data[agent_data['Chunk'] == 'FINAL']
-
-    if agent_final.empty:
-        return jsonify({"success": False, "error": f"No completed audits for {agent_name}"})
-
-    # Calculations
-    avg_empathy = agent_final['empathy'].mean()
-    avg_prof = agent_final['professionalism'].mean()
-    
-    total_audio = len(agent_final[agent_final['Source'] == 'Audio'])
-    total_email = len(agent_final[agent_final['Source'] == 'Email'])
-    total_convos = total_audio + total_email
-
-    overall_avg = (avg_empathy + avg_prof) / 2
-    compliance = "PASS" if overall_avg >= 80 else "WARN" if overall_avg >= 60 else "FAIL"
-
-    # Sum masking counts
-    total_pii_masked = 0
-    import re
-    for m_analysis in agent_final['masking_analysis']:
-        if pd.notna(m_analysis):
-            nums = re.findall(r'\d+', str(m_analysis))
-            total_pii_masked += sum(int(n) for n in nums)
-
-    # Top violations logic
-    all_v = []
-    for v_str in agent_final['violations']:
-        if pd.notna(v_str) and str(v_str).strip() != "None" and str(v_str).strip() != "":
-            all_v.extend([v.strip() for v in str(v_str).split('|')])
-    top_violations = []
-    if all_v:
-        vc = pd.Series(all_v).value_counts().head(5)
-        top_violations = [[v, int(c)] for v, c in vc.items()]
-
-    # Top suggestions logic
-    all_s = []
-    for s_str in agent_final['suggestions']:
-        if pd.notna(s_str) and str(s_str).strip() != "None" and str(s_str).strip() != "":
-            all_s.extend([s.strip() for s in str(s_str).split('|')])
-    top_suggestions = []
-    if all_s:
-        sc = pd.Series(all_s).value_counts().head(5)
-        top_suggestions = [[s, int(c)] for s, c in sc.items()]
-
-    # History of conversations logs
-    history = agent_final.sort_index(ascending=False).head(10)[['Source', 'compliance', 'empathy', 'professionalism', 'reason', 'Transcript', 'masking_analysis']].to_dict(orient='records')
-
-    # Apply live masking display safeguard
-    for h in history:
-        raw_t = h.get('Transcript', '')
-        if raw_t and raw_t != 'Historical data: Transcript not saved.':
-            h['Transcript'] = redact_pii(str(raw_t))['redacted_text']
-
-    return jsonify({
-        "success": True,
-        "empathy": float(avg_empathy),
-        "professionalism": float(avg_prof),
-        "compliance": compliance,
-        "total_pii_masked": total_pii_masked,
-        "total_convos": total_convos,
-        "total_audio": total_audio,
-        "total_email": total_email,
-        "top_violations": top_violations,
-        "top_suggestions": top_suggestions,
-        "history": history
-    })
-
-# ================= BACKGROUND AUDIT PROCESSOR FOR AUDIO =================
-def async_audit_pipeline(task_id, audio_path, agent_name, language, organization="Default"):
-    global TASKS
-    TASKS[task_id] = {"status": "Initializing modules...", "progress": 5, "complete": False, "error": None}
-    
+def coaching_roadmap():
+    violations = database.top_violations(limit=10)
+    suggestions = database.recent_suggestions()
+    if not violations and not suggestions:
+        return jsonify({"error": "Audit a few calls first — there is nothing to build a plan from yet."}), 400
     try:
-        from backend.transcribe import transcribe_audio
-        from backend.clean_transcript import label_speakers
-        
-        # 1. Transcribe audio
-        TASKS[task_id]["status"] = "Transcribing Call Audio (Groq Whisper-v3)..."
-        TASKS[task_id]["progress"] = 25
-        raw_text = transcribe_audio(audio_path, language=None if language == "auto-detect" else language)
-        
-        # Use /tmp for intermediate transcript files on Cloud Run
-        # These are transient per-request files — /tmp is correct and sufficient
-        data_dir = "/tmp"
-        os.makedirs(data_dir, exist_ok=True)
-        raw_transcript_path = os.path.join(data_dir, f"{task_id}_raw_transcript.txt")
-        with open(raw_transcript_path, "w", encoding="utf-8") as f:
-            f.write(raw_text)
-            
-        # 2. Label Speakers
-        TASKS[task_id]["status"] = "Labeling Speakers (Diarization)..."
-        TASKS[task_id]["progress"] = 55
-        labeled_text = label_speakers(raw_text)
-        
-        # 3. Redact PII
-        TASKS[task_id]["status"] = "Redacting Sensitive Customer PII..."
-        TASKS[task_id]["progress"] = 75
-        masking_result = redact_pii(labeled_text)
-        redacted_text = masking_result["redacted_text"]
-        
-        labeled_transcript_path = os.path.join(data_dir, f"{task_id}_labeled_dialogue.txt")
-        with open(labeled_transcript_path, "w", encoding="utf-8") as f:
-            f.write(redacted_text)
-            
-        # 4. Score Compliance
-        TASKS[task_id]["status"] = "Running Compliance Scoring Engine..."
-        TASKS[task_id]["progress"] = 90
-        run_average_audit(
-            labeled_transcript_path, 
-            agent_name=agent_name, 
-            masking_score=masking_result["masking_score"],
-            masking_analysis=masking_result["analysis"],
-            filename=os.path.basename(audio_path),
-            redacted_transcript=masking_result["redacted_text"],
-            organization=organization
-        )
-        
-        # Cleanup uploaded temp file
-        try:
-            os.remove(audio_path)
-        except Exception:
-            pass
-            
-        TASKS[task_id]["status"] = "Auditing Completed!"
-        TASKS[task_id]["progress"] = 100
-        TASKS[task_id]["complete"] = True
-        
-    except Exception as e:
-        TASKS[task_id]["error"] = str(e)
-        TASKS[task_id]["status"] = "Audit Failed"
-        logger.error(f"CRITICAL in async audit thread: {e}")
+        return jsonify({"roadmap": generate_coaching_roadmap(violations, suggestions)})
+    except Exception as error:
+        logger.exception("Coaching roadmap failed")
+        return jsonify({"error": f"Could not generate the roadmap: {error}"}), 502
 
-@app.route('/api/upload-audio', methods=['POST'])
+
+@app.route("/api/export.csv")
 @login_required
-def upload_audio():
-    if 'audioFile' not in request.files:
-        return jsonify({"success": False, "error": "No file uploaded"})
-        
-    file = request.files['audioFile']
-    agent_name = request.form.get('agentName', 'Unknown Agent')
-    language = request.form.get('language', 'auto-detect')
+def export_csv():
+    rows = database.export_rows()
+    buffer = io.StringIO()
+    columns = ["id", "agent_name", "filename", "outcome", "overall_score", "compliance_score",
+               "protocol_score", "soft_skills_score", "empathy", "professionalism",
+               "summary", "pii_summary", "created_at"]
+    writer = csv.DictWriter(buffer, fieldnames=columns)
+    writer.writeheader()
+    writer.writerows(rows)
 
-    if file.filename == '':
-        return jsonify({"success": False, "error": "No file selected"})
-
-    if file:
-        # Use /tmp for ephemeral file storage on Cloud Run
-        # Audio files are deleted immediately after scoring — /tmp is sufficient
-        upload_dir = "/tmp/uploads"
-        os.makedirs(upload_dir, exist_ok=True)
-        
-        # Generate temporary unique name
-        temp_filename = f"{uuid.uuid4().hex}_{file.filename}"
-        temp_path = os.path.join(upload_dir, temp_filename)
-        file.save(temp_path)
-        
-        # Launch background worker
-        task_id = str(uuid.uuid4())
-        organization = session.get('organization', 'Default')
-        thread = Thread(target=async_audit_pipeline, args=(task_id, temp_path, agent_name, language, organization))
-        thread.daemon = True
-        thread.start()
-        
-        return jsonify({"success": True, "task_id": task_id})
-        
-    return jsonify({"success": False, "error": "Upload failed"})
-
-@app.route('/api/task-status/<task_id>', methods=['GET'])
-@login_required
-def task_status(task_id):
-    task = TASKS.get(task_id, {"status": "Task not found", "progress": 0, "complete": False, "error": "Unknown Task ID"})
-    return jsonify(task)
-
-# ================= EMAIL AUDITING API ENDPOINTS =================
-
-@app.route('/api/manual-score-email', methods=['POST'])
-@login_required
-def manual_score_email():
-    data = request.get_json()
-    if not data or 'emailText' not in data:
-        return jsonify({"success": False, "error": "No email context provided"})
-        
-    agent_name = data.get('agentName', 'Unknown Agent')
-    email_text = data.get('emailText')
-    
-    try:
-        filename_label = f"Email_Manual_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
-        organization = session.get('organization', 'Default')
-        result = score_email(email_text, agent_name=agent_name, filename=filename_label, organization=organization)
-        
-        # Return properly structured lists
-        violations = result.get('violations', [])
-        suggestions = result.get('suggestions', [])
-        
-        # Safeguards if response string formatting happens instead of lists
-        if isinstance(violations, str): violations = [violations]
-        if isinstance(suggestions, str): suggestions = [suggestions]
-
-        formatted_result = {
-            "empathy": result.get("empathy", 0),
-            "professionalism": result.get("professionalism", 0),
-            "compliance": result.get("compliance", "Fail"),
-            "reason": result.get("reason", "No details"),
-            "violations": violations if violations else ["None"],
-            "suggestions": suggestions if suggestions else ["None"]
-        }
-        
-        return jsonify({"success": True, "result": formatted_result})
-    except Exception as e:
-        return jsonify({"success": False, "error": str(e)})
-
-@app.route('/api/extract-imap-email', methods=['POST'])
-@login_required
-def extract_imap_email():
-    data = request.get_json()
-    agent_name = data.get('agentName', 'Unknown Agent')
-    server = data.get('server')
-    port = data.get('port')
-    email_user = data.get('email')
-    email_pass = data.get('password')
-    folder = data.get('folder', 'INBOX')
-
-    # Connect using IMAP extractor script
-    res = extract_selected_emails(
-        server=server,
-        port=port,
-        email_user=email_user,
-        email_pass=email_pass,
-        folder=folder
-    )
-    
-    if not res["success"]:
-        return jsonify({"success": False, "error": res["error"]})
-
-    email_data = res["data"]
-    
-    try:
-        filename_label = f"Email_IMAP_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
-        organization = session.get('organization', 'Default')
-        result = score_email(email_data["body"], agent_name=agent_name, filename=filename_label, organization=organization)
-        
-        violations = result.get('violations', [])
-        suggestions = result.get('suggestions', [])
-        
-        if isinstance(violations, str): violations = [violations]
-        if isinstance(suggestions, str): suggestions = [suggestions]
-
-        formatted_result = {
-            "empathy": result.get("empathy", 0),
-            "professionalism": result.get("professionalism", 0),
-            "compliance": result.get("compliance", "Fail"),
-            "reason": result.get("reason", "No details"),
-            "violations": violations if violations else ["None"],
-            "suggestions": suggestions if suggestions else ["None"]
-        }
-        
-        return jsonify({"success": True, "result": formatted_result})
-    except Exception as e:
-        return jsonify({"success": False, "error": str(e)})
-
-# ================= AI GENERATED TRAINING ROADMAP =================
-
-@app.route('/api/generate-roadmap', methods=['POST'])
-@login_required
-def generate_coaching_roadmap():
-    df = read_audit_data()
-    team_final = df[df['Chunk'] == 'FINAL']
-    
-    team_suggestions = []
-    for s_str in team_final['suggestions']:
-        if pd.notna(s_str) and str(s_str).strip() != "None" and str(s_str).strip() != "":
-            team_suggestions.extend([s.strip() for s in str(s_str).split('|') if s.strip()])
-            
-    if not team_suggestions:
-        return jsonify({"success": False, "error": "Add more audit logs to cluster improvement suggestions."})
-        
-    api_key = os.getenv("GROQ_API_KEY")
-    if not api_key:
-        return jsonify({"success": False, "error": "GROQ_API_KEY is not configured in .env file"})
-
-    try:
-        from groq import Groq
-        client = Groq(api_key=api_key)
-        unique_suggestions = list(set(team_suggestions))
-        
-        prompt = f"""
-        Analyze these individual coaching suggestions collected from multiple customer service agent audits:
-        {unique_suggestions}
-        
-        Categorize these into 3-5 high-level 'Training Modules'. 
-        For each module, provide:
-        1. A catchy 'Module Name'
-        2. A brief 'Core Objective'
-        3. 3-4 'Specific Actionable Steps' for the agents to follow.
-        4. Mention which specific common mistakes this module addresses.
-        
-        Format the response clearly using Markdown (headers, bullet points, and bold text).
-        Do not add code blocks or extra text wrapper.
-        """
-        
-        response = client.chat.completions.create(
-            messages=[{"role": "user", "content": prompt}],
-            model="llama-3.3-70b-versatile",
-        )
-        roadmap = response.choices[0].message.content
-        session['coaching_roadmap'] = roadmap
-        
-        return jsonify({"success": True, "roadmap": roadmap})
-    except Exception as e:
-        return jsonify({"success": False, "error": str(e)})
-
-# ================= DOWNLOADS GENERATION AND ROUTING =================
-
-@app.route('/api/download-csv', methods=['GET'])
-@login_required
-def download_csv():
-    df = read_audit_data() # Already filtered by organization!
-    if df.empty:
-        column_order = ['Chunk', 'empathy', 'professionalism', 'compliance', 'reason', 'violations', 'suggestions', 'evaluation', 'Agent', 'masking_score', 'masking_analysis', 'Source', 'Transcript', 'Filename', 'Organization']
-        df = pd.DataFrame(columns=column_order)
-    
-    org_name = session.get('organization', 'Default')
-    response = make_response(df.to_csv(index=False))
-    response.headers.set('Content-Type', 'text/csv')
-    response.headers.set('Content-Disposition', 'attachment', filename=f"audit_results_{org_name}.csv")
+    response = make_response(buffer.getvalue())
+    response.headers["Content-Type"] = "text/csv"
+    response.headers["Content-Disposition"] = "attachment; filename=call_audits.csv"
     return response
 
-@app.route('/api/download-roadmap-pdf', methods=['POST'])
-@login_required
-def download_roadmap_pdf():
-    roadmap = session.get('coaching_roadmap')
-    if not roadmap:
-        return make_response("No generated roadmap in session. Please run roadmap generation first.", 400)
-        
-    if not FPDF:
-        return make_response("FPDF library is not loaded", 500)
 
-    try:
-        class CoachingPDF(FPDF):
-            def header(self):
-                self.set_font('Arial', 'B', 16)
-                self.cell(0, 10, 'AI-Driven Coaching Roadmap', 0, 1, 'C')
-                self.ln(5)
-            def footer(self):
-                self.set_y(-15)
-                self.set_font('Arial', 'I', 8)
-                self.cell(0, 10, f'Generated on {datetime.now().strftime("%Y-%m-%d %H:%M:%S")} | Page ' + str(self.page_no()), 0, 0, 'C')
-
-        pdf = CoachingPDF()
-        pdf.add_page()
-        pdf.set_font("Arial", size=11)
-        
-        lines = roadmap.split('\n')
-        for line in lines:
-            try:
-                clean_line = clean_pdf_text(line)
-                if not clean_line.strip() and not line.strip():
-                    pdf.ln(4)
-                    continue
-                    
-                if line.startswith('# '):
-                    pdf.set_font("Arial", 'B', 14)
-                    pdf.cell(0, 8, clean_line.replace('# ', ''), ln=1)
-                    pdf.set_font("Arial", size=11)
-                elif line.startswith('## '):
-                    pdf.set_font("Arial", 'B', 13)
-                    pdf.cell(0, 8, clean_line.replace('## ', ''), ln=1)
-                    pdf.set_font("Arial", size=11)
-                elif line.startswith('### '):
-                    pdf.set_font("Arial", 'B', 12)
-                    pdf.cell(0, 7, clean_line.replace('### ', ''), ln=1)
-                    pdf.set_font("Arial", size=11)
-                else:
-                    if clean_line.strip():
-                        pdf.multi_cell(0, 6, clean_line)
-            except Exception as e:
-                logger.warning(f"Skipping PDF row error: {e}")
-                
-        pdf_output = pdf.output(dest='S')
-        
-        response = make_response(bytes(pdf_output))
-        response.headers.set('Content-Type', 'application/pdf')
-        response.headers.set('Content-Disposition', 'attachment', filename=f"Coaching_Roadmap_{datetime.now().strftime('%Y%m%d')}.pdf")
-        return response
-    except Exception as e:
-        return make_response(f"PDF creation failed: {e}", 500)
-
-@app.route('/api/download-summary-pdf', methods=['POST'])
-@login_required
-def download_summary_pdf():
-    df = read_audit_data()
-    team_final = df[df['Chunk'] == 'FINAL']
-    
-    if team_final.empty:
-        return make_response("No audit records to summarize.", 400)
-        
-    if not FPDF:
-        return make_response("FPDF library is not loaded", 500)
-
-    try:
-        class SummaryPDF(FPDF):
-            def header(self):
-                self.set_font('Arial', 'B', 14)
-                self.cell(0, 10, 'Team Compliance Summary Report', 0, 1, 'C')
-                self.ln(5)
-            def footer(self):
-                self.set_y(-15)
-                self.set_font('Arial', 'I', 8)
-                self.cell(0, 10, f'Page ' + str(self.page_no()), 0, 0, 'C')
-
-        pdf = SummaryPDF()
-        pdf.add_page()
-        pdf.set_font("Arial", size=11)
-        
-        # Metadata
-        pdf.cell(0, 8, f"Total Audits Performed: {len(team_final)}", ln=1)
-        pdf.cell(0, 8, f"Team Average Empathy: {team_final['empathy'].mean():.2f}", ln=1)
-        pdf.cell(0, 8, f"Team Average Professionalism: {team_final['professionalism'].mean():.2f}", ln=1)
-        pdf.ln(8)
-        
-        # Table Header
-        pdf.set_font("Arial", 'B', 11)
-        pdf.cell(60, 10, 'Agent', border=1)
-        pdf.cell(40, 10, 'Avg Empathy', border=1)
-        pdf.cell(40, 10, 'Avg Professionalism', border=1)
-        pdf.cell(40, 10, 'Compliance', border=1, ln=1)
-        
-        pdf.set_font("Arial", size=10)
-        agent_table = team_final.groupby('Agent')[['empathy', 'professionalism']].mean().reset_index()
-        
-        for _, row in agent_table.iterrows():
-            pdf.cell(60, 10, clean_pdf_text(row['Agent']), border=1)
-            pdf.cell(40, 10, f"{row['empathy']:.1f}", border=1)
-            pdf.cell(40, 10, f"{row['professionalism']:.1f}", border=1)
-            
-            avg = (row['empathy'] + row['professionalism']) / 2
-            comp = "PASS" if avg >= 80 else "WARN" if avg >= 60 else "FAIL"
-            pdf.cell(40, 10, comp, border=1, ln=1)
-            
-        pdf_output = pdf.output(dest='S')
-        
-        response = make_response(bytes(pdf_output))
-        response.headers.set('Content-Type', 'application/pdf')
-        response.headers.set('Content-Disposition', 'attachment', filename=f"Team_Audit_Summary_{datetime.now().strftime('%Y%m%d')}.pdf")
-        return response
-    except Exception as e:
-        return make_response(f"PDF creation failed: {e}", 500)
-
-# ================= DATABASE STATUS ENDPOINT =================
-
-@app.route('/api/db-status')
-@login_required
-def db_status():
-    """Returns live database health stats — useful for demos and monitoring."""
-    try:
-        stats = get_db_stats()
-        return jsonify(stats)
-    except Exception as e:
-        return jsonify({"status": "error", "error": str(e)}), 500
+@app.errorhandler(413)
+def file_too_large(_error):
+    return jsonify({"error": f"File is too large (max {config.MAX_UPLOAD_BYTES // (1024 * 1024)} MB)"}), 413
 
 
-# ================= RUN SERVER =================
-if __name__ == '__main__':
+if __name__ == "__main__":
     port = int(os.environ.get("PORT", 7860))
-    # Ensure DB schema is up-to-date on startup
-    init_db()
-    app.run(host='0.0.0.0', port=port, debug=True)
+    app.run(host="127.0.0.1", port=port, debug=False)
