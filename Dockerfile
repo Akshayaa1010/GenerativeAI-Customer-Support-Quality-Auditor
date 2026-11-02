@@ -46,11 +46,12 @@ COPY --from=builder /usr/local/bin /usr/local/bin
 # Copy application code
 COPY . .
 
-# Cloud Run writes uploaded files to /tmp (ephemeral, instance-local)
-# Audio files are processed then deleted immediately — /tmp is sufficient
-RUN mkdir -p /tmp/uploads
+# Run as a non-root user (Hugging Face Spaces uses uid 1000).
+# Uploaded audio goes to the system temp folder and is deleted after each audit.
+RUN useradd --uid 1000 --create-home appuser && chown -R appuser /app
+USER appuser
 
-# Cloud Run injects $PORT at runtime (default 8080)
+# Cloud Run injects $PORT; Hugging Face Spaces uses app_port 8080 from the Space README.
 EXPOSE 8080
 
 # ─────────────────────────────────────────────────────────────────────────────

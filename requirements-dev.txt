@@ -1,0 +1,7 @@
+-r requirements.txt
+
+# Tests
+pytest==8.3.4
+
+# Deploying to Hugging Face Spaces (scripts/deploy_to_hf_space.py)
+huggingface_hub==0.27.0

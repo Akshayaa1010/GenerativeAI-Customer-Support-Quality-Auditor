@@ -1,19 +1,21 @@
 """
 Central place for every setting the app reads from the environment.
 
-Locally the values come from a .env file in the project root; on Cloud Run
-they come from environment variables and Secret Manager.
+Locally the values come from a .env file in the project root; when hosted
+they come from the platform's secrets (Hugging Face Space secrets or
+Google Secret Manager).
 """
 
 import os
+import tempfile
 
 from dotenv import load_dotenv
 
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 load_dotenv(os.path.join(PROJECT_ROOT, ".env"))
 
-# True when running on Google Cloud Run (it always sets K_SERVICE).
-IS_PRODUCTION = bool(os.getenv("K_SERVICE"))
+# True when hosted: Hugging Face Spaces sets SPACE_ID, Google Cloud Run sets K_SERVICE.
+IS_PRODUCTION = bool(os.getenv("SPACE_ID") or os.getenv("K_SERVICE"))
 
 # --- Admin login ---------------------------------------------------------
 ADMIN_USERNAME = os.getenv("ADMIN_USERNAME", "")
@@ -24,7 +26,8 @@ FLASK_SECRET_KEY = os.getenv("FLASK_SECRET_KEY", "")
 DATABASE_URL = os.getenv("DATABASE_URL", "")
 SQLITE_PATH = os.path.join(PROJECT_ROOT, "data", "auditor.db")
 POLICY_PATH = os.path.join(PROJECT_ROOT, "data", "policy.txt")
-UPLOAD_DIR = os.path.join("/tmp" if IS_PRODUCTION else os.path.join(PROJECT_ROOT, "data"), "uploads")
+# Uploaded audio is kept only until the audit finishes, so the system temp folder is enough.
+UPLOAD_DIR = os.path.join(tempfile.gettempdir(), "call-auditor-uploads")
 
 # --- Groq (speech-to-text and LLM) ---------------------------------------
 GROQ_API_KEY = os.getenv("GROQ_API_KEY", "")

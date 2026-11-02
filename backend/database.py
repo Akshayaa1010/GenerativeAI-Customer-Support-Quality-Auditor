@@ -217,7 +217,7 @@ AGENT_STATS_COLUMNS = """
     AVG(overall_score)                                    AS avg_overall,
     AVG(empathy)                                          AS avg_empathy,
     AVG(professionalism)                                  AS avg_professionalism,
-    100.0 * SUM(CASE WHEN outcome = 'PASS' THEN 1 ELSE 0 END) / COUNT(*) AS pass_rate,
+    CAST(100.0 * SUM(CASE WHEN outcome = 'PASS' THEN 1 ELSE 0 END) / COUNT(*) AS REAL) AS pass_rate,
     SUM(CASE WHEN outcome = 'FAIL' THEN 1 ELSE 0 END)     AS fail_count
 """
 

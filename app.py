@@ -41,6 +41,10 @@ LANGUAGES = {"auto": None, "en": "en", "hi": "hi", "ta": "ta", "es": "es", "fr":
 
 
 def create_app() -> Flask:
+    if config.IS_PRODUCTION and not config.DATABASE_URL:
+        # The container's disk is wiped on every restart, so SQLite would lose all audits.
+        raise RuntimeError("DATABASE_URL must be set in production (e.g. a Neon Postgres URL).")
+
     app = Flask(__name__, template_folder="frontend/templates", static_folder="frontend/static")
     app.secret_key = _load_secret_key()
     app.config.update(
