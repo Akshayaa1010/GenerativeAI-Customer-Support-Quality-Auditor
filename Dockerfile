@@ -46,12 +46,12 @@ COPY --from=builder /usr/local/bin /usr/local/bin
 # Copy application code
 COPY . .
 
-# Run as a non-root user (Hugging Face Spaces uses uid 1000).
+# Run as a non-root user rather than root.
 # Uploaded audio goes to the system temp folder and is deleted after each audit.
 RUN useradd --uid 1000 --create-home appuser && chown -R appuser /app
 USER appuser
 
-# Cloud Run injects $PORT; Hugging Face Spaces uses app_port 8080 from the Space README.
+# Render and Cloud Run tell the app which port to use through $PORT (8080 if not set).
 EXPOSE 8080
 
 # ─────────────────────────────────────────────────────────────────────────────

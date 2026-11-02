@@ -2,8 +2,8 @@
 Central place for every setting the app reads from the environment.
 
 Locally the values come from a .env file in the project root; when hosted
-they come from the platform's secrets (Hugging Face Space secrets or
-Google Secret Manager).
+they come from the hosting platform's environment settings (Render, or
+Google Secret Manager on Cloud Run).
 """
 
 import os
@@ -14,8 +14,8 @@ from dotenv import load_dotenv
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 load_dotenv(os.path.join(PROJECT_ROOT, ".env"))
 
-# True when hosted: Hugging Face Spaces sets SPACE_ID, Google Cloud Run sets K_SERVICE.
-IS_PRODUCTION = bool(os.getenv("SPACE_ID") or os.getenv("K_SERVICE"))
+# True when hosted: Render sets RENDER, Google Cloud Run sets K_SERVICE.
+IS_PRODUCTION = bool(os.getenv("RENDER") or os.getenv("K_SERVICE"))
 
 # --- Admin login ---------------------------------------------------------
 ADMIN_USERNAME = os.getenv("ADMIN_USERNAME", "")
