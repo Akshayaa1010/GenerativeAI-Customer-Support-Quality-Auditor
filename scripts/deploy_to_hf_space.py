@@ -8,7 +8,8 @@ What it does:
      this is a Docker app listening on port 8080).
   4. Uploads the files. Hugging Face then builds the Dockerfile and starts the app.
 
-Before the first run, sign in once with a Hugging Face access token that has write access:
+Before the first run, give the script a Hugging Face access token with write access,
+either by adding it to .env as HF_TOKEN=... or by signing in once with:
     .venv\\Scripts\\huggingface-cli login
 
 Usage:
@@ -22,9 +23,13 @@ import tarfile
 import tempfile
 from pathlib import Path
 
+from dotenv import load_dotenv
 from huggingface_hub import HfApi
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
+
+# Lets HF_TOKEN be read from .env (huggingface_hub picks it up from the environment).
+load_dotenv(PROJECT_ROOT / ".env")
 
 SPACE_HEADER = """---
 title: Call Quality Auditor
