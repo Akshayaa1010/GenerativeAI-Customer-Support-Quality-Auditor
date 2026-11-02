@@ -1,29 +1,18 @@
-# Core Web Framework & Server
-Flask>=3.0.0
-flask-cors>=4.0.0
-gunicorn>=21.2.0
-werkzeug>=3.0.0
-python-dotenv>=1.0.0
+# Web server
+Flask==3.1.0
+gunicorn==23.0.0
+python-dotenv==1.0.1
 
-# Database (PostgreSQL — Cloud Run / Cloud SQL)
-psycopg2-binary>=2.9.9
+# Database (PostgreSQL in production; SQLite is built into Python for local dev)
+psycopg2-binary==2.9.10
 
-# AI Models & LLM Integration
-groq>=0.4.0
-pinecone>=3.2.2
-langchain>=0.1.20
-langchain-community>=0.0.20
-langchain-pinecone>=0.1.1
-spacy>=3.7.0
+# AI: Groq for speech-to-text + LLM, Pinecone for policy retrieval (RAG)
+groq==0.13.1
+pinecone==5.4.2
+pydantic==2.10.4
 
-# Data Processing & Analytics
-pandas>=2.2.0
-numpy>=1.26.0
-plotly>=5.17.0
+# PII redaction (NER for names)
+spacy==3.8.3
 
-# HTML Parsing & Utilities
-beautifulsoup4>=4.12.0
-requests>=2.31.0
-fpdf2>=2.7.0
-rich>=13.7.0
-markdown-it-py>=3.0.0
+# Tests
+pytest==8.3.4

@@ -1,80 +1,63 @@
-import os
-import sys
+"""
+The audit pipeline for one uploaded call:
+
+    audio --> transcribe --> redact PII --> label speakers --> find relevant
+    policy rules (RAG) --> AI evaluation --> save scores
+
+Progress is written to the database at each step, so the dashboard can show
+it no matter which server instance handles the status request.
+"""
+
 import logging
-from transcribe import transcribe_audio
-from clean_transcript import label_speakers
-from redaction import redact_pii
-from scoring_engine import run_average_audit
-from dotenv import load_dotenv
+import os
+import threading
 
-load_dotenv()
+from backend import database, llm
+from backend.policy import policy_version
+from backend.rag import get_retriever
+from backend.redaction import redact_pii
+from backend.scoring import evaluate_call, label_speakers
 
-# Get the project root directory
-PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-
-# Setup logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
-def run_pipeline(audio_path, agent_name="Unknown Agent", language=None):
-    # Ensure data directory exists
-    data_dir = os.path.join(PROJECT_ROOT, "data")
-    os.makedirs(data_dir, exist_ok=True)
-    
+
+def start_audit_in_background(audit_id: int, audio_path: str, language: str | None):
+    """Run the audit on a background thread so the upload request returns immediately."""
+    thread = threading.Thread(target=run_audit, args=(audit_id, audio_path, language), daemon=True)
+    thread.start()
+
+
+def run_audit(audit_id: int, audio_path: str, language: str | None):
     try:
-        # 1. Transcribe
-        logger.info(f"Starting transcription for {audio_path} (Language: {language if language else 'Auto-detect'})")
-        raw_text = transcribe_audio(audio_path, language=language)
-        
-        raw_transcript_path = os.path.join(data_dir, "1_raw_transcript.txt")
-        with open(raw_transcript_path, "w", encoding="utf-8") as f:
-            f.write(raw_text)
-        logger.info(f"Transcription complete. Saved to {raw_transcript_path}")
+        database.update_progress(audit_id, "Transcribing audio")
+        raw_transcript = llm.transcribe(audio_path, language)
+        if not raw_transcript:
+            raise ValueError("No speech was detected in the audio file.")
 
-        # 2. Label Speakers (Diarization)
-        logger.info("Starting speaker labeling...")
-        labeled_text = label_speakers(raw_text)
-        
-        # 3. Redact PII
-        logger.info("Starting PII redaction...")
-        masking_result = redact_pii(labeled_text)
-        redacted_text = masking_result["redacted_text"]
-        
-        labeled_transcript_path = os.path.join(data_dir, "3_labeled_dialogue.txt")
-        with open(labeled_transcript_path, "w", encoding="utf-8") as f:
-            f.write(redacted_text)
-        logger.info(f"Speaker labeling and redaction complete. Saved to {labeled_transcript_path}")
+        # Redact before the transcript is sent to any LLM.
+        database.update_progress(audit_id, "Redacting personal data")
+        redaction = redact_pii(raw_transcript)
 
-        # 4. Score
-        logger.info("Starting compliance scoring...")
-        run_average_audit(
-            labeled_transcript_path, 
-            agent_name=agent_name, 
-            masking_score=masking_result["masking_score"],
-            masking_analysis=masking_result["analysis"],
-            filename=os.path.basename(audio_path),
-            redacted_transcript=masking_result["redacted_text"]
-        )
-        logger.info(f"Scoring complete for {agent_name}. audit_results.csv updated.")
-        
-        return True
-    except Exception as e:
-        logger.error(f"Pipeline failed: {str(e)}")
-        import traceback
-        logger.error(traceback.format_exc())
-        return False
+        database.update_progress(audit_id, "Identifying agent and customer")
+        labelled = label_speakers(redaction.text) or redaction.text
+        # The labelling step can reformat text; a second pass catches anything it exposed.
+        transcript = redact_pii(labelled).text
 
-if __name__ == "__main__":
-    if len(sys.argv) < 2:
-        print("Usage: python pipeline.py <path_to_audio> [agent_name] [language]")
-        sys.exit(1)
-    
-    audio_file = sys.argv[1]
-    agent_name = sys.argv[2] if len(sys.argv) > 2 else os.path.splitext(os.path.basename(audio_file))[0]
-    language = sys.argv[3] if len(sys.argv) > 3 else None
-    
-    success = run_pipeline(audio_file, agent_name, language)
-    if success:
-        print("Pipeline finished successfully!")
-    else:
-        print("Pipeline failed.")
+        database.update_progress(audit_id, "Finding relevant policy rules")
+        rules = get_retriever().relevant_rules(transcript)
+
+        database.update_progress(audit_id, f"AI is scoring the call against {len(rules)} rules")
+        scores = evaluate_call(transcript, rules)
+
+        database.save_completed_audit(audit_id, transcript, redaction.summary(), scores, policy_version())
+        logger.info("Audit %d completed: %s (%.1f)", audit_id, scores.outcome, scores.overall_score)
+
+    except Exception as error:
+        logger.exception("Audit %d failed", audit_id)
+        database.mark_failed(audit_id, str(error))
+
+    finally:
+        try:
+            os.remove(audio_path)
+        except OSError:
+            pass

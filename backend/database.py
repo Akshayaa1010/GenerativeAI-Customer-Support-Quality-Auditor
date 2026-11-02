@@ -1,402 +1,274 @@
 """
-backend/database.py
-===================
-Dual-mode database layer:
-  - Cloud Run (production): PostgreSQL via DATABASE_URL env var
-  - Local dev (no DATABASE_URL set): SQLite fallback for zero-config testing
+Database access. Two tables:
 
-Production DATABASE_URL formats:
-  Cloud SQL (Unix socket): postgresql://user:pass@/dbname?host=/cloudsql/project:region:instance
-  Cloud SQL (public IP):   postgresql://user:pass@PUBLIC_IP:5432/dbname
-  Supabase / Neon / Railway: postgresql://user:pass@host:5432/dbname?sslmode=require
+    audits         one row per audited call (status, scores, transcript)
+    rule_findings  one row per policy rule checked in an audit
+
+PostgreSQL is used when DATABASE_URL is set (production). Otherwise a local
+SQLite file is used, so the app runs with zero setup on a laptop.
+SQL is written once with "?" placeholders and converted for PostgreSQL.
 """
 
+import json
 import os
 import sqlite3
-import logging
-import pandas as pd
 from contextlib import contextmanager
-from werkzeug.security import generate_password_hash, check_password_hash
-import hashlib
+from datetime import datetime, timedelta, timezone
 
-logger = logging.getLogger(__name__)
+from backend import config
 
-PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-_SQLITE_PATH  = os.path.join(PROJECT_ROOT, "data", "audit_system.db")
-_USE_POSTGRES = bool(os.environ.get("DATABASE_URL"))
+USE_POSTGRES = bool(config.DATABASE_URL)
 
-# SQL placeholder style: %s for psycopg2, ? for sqlite3
-PH = "%s" if _USE_POSTGRES else "?"
+ID_COLUMN = "SERIAL PRIMARY KEY" if USE_POSTGRES else "INTEGER PRIMARY KEY AUTOINCREMENT"
+
+SCHEMA = f"""
+CREATE TABLE IF NOT EXISTS audits (
+    id                 {ID_COLUMN},
+    agent_name         TEXT NOT NULL,
+    filename           TEXT,
+    status             TEXT NOT NULL,          -- processing | completed | failed
+    progress_message   TEXT,
+    error              TEXT,
+    transcript         TEXT,                   -- redacted, speaker-labelled
+    pii_summary        TEXT,
+    empathy            REAL,
+    professionalism    REAL,
+    compliance_score   REAL,
+    protocol_score     REAL,
+    soft_skills_score  REAL,
+    overall_score      REAL,
+    outcome            TEXT,                   -- PASS | WARN | FAIL
+    summary            TEXT,
+    suggestions        TEXT,                   -- JSON list of strings
+    policy_version     TEXT,
+    created_at         TEXT NOT NULL,
+    completed_at       TEXT
+);
+
+CREATE TABLE IF NOT EXISTS rule_findings (
+    id              {ID_COLUMN},
+    audit_id        INTEGER NOT NULL REFERENCES audits(id) ON DELETE CASCADE,
+    rule_id         TEXT NOT NULL,
+    rule_title      TEXT NOT NULL,
+    zero_tolerance  INTEGER NOT NULL,          -- 1 or 0
+    verdict         TEXT NOT NULL,             -- pass | fail | not_applicable
+    evidence        TEXT,
+    explanation     TEXT
+);
+
+CREATE INDEX IF NOT EXISTS idx_audits_agent ON audits(agent_name);
+CREATE INDEX IF NOT EXISTS idx_findings_audit ON rule_findings(audit_id);
+"""
 
 
-# ─────────────────────────────────────────────
-# Connection Management
-# ─────────────────────────────────────────────
+# ----- Connection helpers -------------------------------------------------
 
-def get_connection():
-    """
-    Returns a live DB connection.
-    - DATABASE_URL set  → psycopg2 (PostgreSQL) — used on Cloud Run
-    - DATABASE_URL unset → sqlite3 (WAL mode) — used locally
-    """
-    if _USE_POSTGRES:
-        import psycopg2, psycopg2.extras
-        url = os.environ["DATABASE_URL"]
-        if url.startswith("postgres://"):
-            url = url.replace("postgres://", "postgresql://", 1)
-        return psycopg2.connect(url, cursor_factory=psycopg2.extras.RealDictCursor)
-    else:
-        logger.debug("No DATABASE_URL — falling back to SQLite for local development.")
-        os.makedirs(os.path.dirname(_SQLITE_PATH), exist_ok=True)
-        conn = sqlite3.connect(_SQLITE_PATH, check_same_thread=False)
-        conn.row_factory = sqlite3.Row
-        conn.execute("PRAGMA foreign_keys = ON")
-        conn.execute("PRAGMA journal_mode = WAL")
-        return conn
+def _connect():
+    if USE_POSTGRES:
+        import psycopg2
+        import psycopg2.extras
+        return psycopg2.connect(config.DATABASE_URL, cursor_factory=psycopg2.extras.RealDictCursor)
+
+    os.makedirs(os.path.dirname(config.SQLITE_PATH), exist_ok=True)
+    connection = sqlite3.connect(config.SQLITE_PATH)
+    connection.row_factory = sqlite3.Row
+    connection.execute("PRAGMA foreign_keys = ON")
+    return connection
 
 
 @contextmanager
-def get_db():
-    """Context manager: auto-commits on success, rolls back on error."""
-    conn = get_connection()
+def _transaction():
+    """Open a connection, commit if the block succeeds, roll back if it raises."""
+    connection = _connect()
     try:
-        yield conn
-        conn.commit()
+        yield connection.cursor()
+        connection.commit()
     except Exception:
-        conn.rollback()
+        connection.rollback()
         raise
     finally:
-        conn.close()
+        connection.close()
 
 
-def _exec(conn, sql: str, params=()):
-    """
-    Execute a SQL statement on either a psycopg2 or sqlite3 connection.
-    Returns the cursor so callers can call .fetchone() / .fetchall().
-    """
-    if _USE_POSTGRES:
-        cur = conn.cursor()
-        cur.execute(sql, params)
-        return cur
-    else:
-        return conn.execute(sql, params)
+def _sql(query: str) -> str:
+    return query.replace("?", "%s") if USE_POSTGRES else query
 
 
-def _fetchone(conn, sql: str, params=()):
-    cur = _exec(conn, sql, params)
-    row = cur.fetchone()
-    return dict(row) if row else None
+def _fetch_all(query: str, params=()) -> list[dict]:
+    with _transaction() as cursor:
+        cursor.execute(_sql(query), params)
+        return [dict(row) for row in cursor.fetchall()]
 
 
-def _fetchall(conn, sql: str, params=()):
-    cur = _exec(conn, sql, params)
-    return [dict(r) for r in cur.fetchall()]
+def _fetch_one(query: str, params=()) -> dict | None:
+    rows = _fetch_all(query, params)
+    return rows[0] if rows else None
 
 
-# ─────────────────────────────────────────────
-# Schema Initialisation
-# ─────────────────────────────────────────────
+def _now() -> str:
+    return datetime.now(timezone.utc).isoformat(timespec="seconds")
+
 
 def init_db():
-    """
-    Create all tables if they don't exist.
-    Uses SERIAL (PostgreSQL) or INTEGER PRIMARY KEY AUTOINCREMENT (SQLite).
-    Safe to call on every startup.
-    """
-    if _USE_POSTGRES:
-        schema = """
-            CREATE TABLE IF NOT EXISTS users (
-                id            SERIAL PRIMARY KEY,
-                username      TEXT UNIQUE NOT NULL,
-                password_hash TEXT NOT NULL,
-                organization  TEXT NOT NULL DEFAULT 'Default',
-                created_at    TIMESTAMPTZ DEFAULT NOW()
-            );
-            CREATE TABLE IF NOT EXISTS audit_sessions (
-                id           SERIAL PRIMARY KEY,
-                session_uuid TEXT UNIQUE NOT NULL,
-                agent_name   TEXT NOT NULL,
-                source       TEXT NOT NULL CHECK(source IN ('Audio', 'Email')),
-                filename     TEXT,
-                organization TEXT NOT NULL DEFAULT 'Default',
-                created_at   TIMESTAMPTZ DEFAULT NOW()
-            );
-            CREATE TABLE IF NOT EXISTS audit_results (
-                id               SERIAL PRIMARY KEY,
-                session_id       INTEGER REFERENCES audit_sessions(id) ON DELETE CASCADE,
-                chunk            TEXT NOT NULL,
-                empathy          REAL,
-                professionalism  REAL,
-                compliance       TEXT,
-                reason           TEXT,
-                violations       TEXT,
-                suggestions      TEXT,
-                evaluation       TEXT,
-                agent            TEXT,
-                masking_score    INTEGER DEFAULT 100,
-                masking_analysis TEXT,
-                source           TEXT,
-                transcript       TEXT,
-                filename         TEXT,
-                organization     TEXT DEFAULT 'Default',
-                created_at       TIMESTAMPTZ DEFAULT NOW()
-            );
-        """
-    else:
-        schema = """
-            CREATE TABLE IF NOT EXISTS users (
-                id            INTEGER PRIMARY KEY AUTOINCREMENT,
-                username      TEXT UNIQUE NOT NULL,
-                password_hash TEXT NOT NULL,
-                organization  TEXT NOT NULL DEFAULT 'Default',
-                created_at    DATETIME DEFAULT CURRENT_TIMESTAMP
-            );
-            CREATE TABLE IF NOT EXISTS audit_sessions (
-                id           INTEGER PRIMARY KEY AUTOINCREMENT,
-                session_uuid TEXT UNIQUE NOT NULL,
-                agent_name   TEXT NOT NULL,
-                source       TEXT NOT NULL CHECK(source IN ('Audio', 'Email')),
-                filename     TEXT,
-                organization TEXT NOT NULL DEFAULT 'Default',
-                created_at   DATETIME DEFAULT CURRENT_TIMESTAMP
-            );
-            CREATE TABLE IF NOT EXISTS audit_results (
-                id               INTEGER PRIMARY KEY AUTOINCREMENT,
-                session_id       INTEGER REFERENCES audit_sessions(id) ON DELETE CASCADE,
-                chunk            TEXT NOT NULL,
-                empathy          REAL,
-                professionalism  REAL,
-                compliance       TEXT,
-                reason           TEXT,
-                violations       TEXT,
-                suggestions      TEXT,
-                evaluation       TEXT,
-                agent            TEXT,
-                masking_score    INTEGER DEFAULT 100,
-                masking_analysis TEXT,
-                source           TEXT,
-                transcript       TEXT,
-                filename         TEXT,
-                organization     TEXT DEFAULT 'Default',
-                created_at       DATETIME DEFAULT CURRENT_TIMESTAMP
-            );
-        """
-
-    with get_db() as conn:
-        if _USE_POSTGRES:
-            with conn.cursor() as cur:
-                cur.execute(schema)
+    with _transaction() as cursor:
+        if USE_POSTGRES:
+            cursor.execute(SCHEMA)
         else:
-            conn.executescript(schema)
-
-    engine = "PostgreSQL" if _USE_POSTGRES else "SQLite"
-    logger.info("Database initialised (%s).", engine)
+            cursor.connection.executescript(SCHEMA)
 
 
-# ─────────────────────────────────────────────
-# User CRUD
-# ─────────────────────────────────────────────
+# ----- Writing audits -----------------------------------------------------
 
-def _sha256(password: str) -> str:
-    """Legacy SHA-256 hash — for migration compatibility only."""
-    return hashlib.sha256(password.encode("utf-8")).hexdigest()
-
-
-def create_user(username: str, password: str, organization: str):
-    """Returns (True, msg) on success, (False, msg) on failure."""
-    try:
-        with get_db() as conn:
-            _exec(
-                conn,
-                f"INSERT INTO users (username, password_hash, organization) VALUES ({PH}, {PH}, {PH})",
-                (username, generate_password_hash(password), organization)
-            )
-        logger.info("User '%s' created.", username)
-        return True, "Account created successfully"
-    except Exception as e:
-        if "unique" in str(e).lower() or "duplicate" in str(e).lower():
-            return False, "Username already exists"
-        logger.error("create_user error: %s", e)
-        return False, str(e)
+def create_audit(agent_name: str, filename: str) -> int:
+    with _transaction() as cursor:
+        cursor.execute(
+            _sql("INSERT INTO audits (agent_name, filename, status, progress_message, created_at) "
+                 "VALUES (?, ?, 'processing', 'Queued', ?) RETURNING id"),
+            (agent_name, filename, _now()),
+        )
+        return cursor.fetchone()["id"]
 
 
-def authenticate_user(username: str, password: str, env_user: str, env_pass: str):
-    """
-    Verify credentials. Returns (True, organization) or (False, None).
-    Always checks env-var admin credentials first as a fallback override.
-    """
-    if username == env_user and password == env_pass:
-        return True, "Default"
+def update_progress(audit_id: int, message: str):
+    with _transaction() as cursor:
+        cursor.execute(_sql("UPDATE audits SET progress_message = ? WHERE id = ?"), (message, audit_id))
 
-    with get_db() as conn:
-        row = _fetchone(
-            conn,
-            f"SELECT password_hash, organization FROM users WHERE username = {PH}",
-            (username,)
+
+def mark_failed(audit_id: int, error: str):
+    with _transaction() as cursor:
+        cursor.execute(
+            _sql("UPDATE audits SET status = 'failed', error = ?, completed_at = ? WHERE id = ?"),
+            (error, _now(), audit_id),
         )
 
-    if row is None:
-        return False, None
 
-    stored_hash = row["password_hash"]
-    org = row["organization"]
-
-    if stored_hash.startswith(("pbkdf2:", "scrypt:")):
-        if check_password_hash(stored_hash, password):
-            return True, org
-    else:
-        # Legacy SHA-256 — auto-upgrade on successful login
-        if stored_hash == _sha256(password):
-            logger.info("Upgrading password hash for '%s'.", username)
-            with get_db() as conn:
-                _exec(
-                    conn,
-                    f"UPDATE users SET password_hash = {PH} WHERE username = {PH}",
-                    (generate_password_hash(password), username)
-                )
-            return True, org
-
-    return False, None
-
-
-def get_all_usernames():
-    """Return list of all registered usernames."""
-    with get_db() as conn:
-        rows = _fetchall(conn, "SELECT username FROM users")
-    return [r["username"] for r in rows]
-
-
-# ─────────────────────────────────────────────
-# Audit Session CRUD
-# ─────────────────────────────────────────────
-
-def create_audit_session(session_uuid: str, agent_name: str, source: str,
-                         filename: str, organization: str) -> int:
-    """Insert a new audit session and return its integer ID."""
-    with get_db() as conn:
-        if _USE_POSTGRES:
-            cur = conn.cursor()
-            cur.execute(
-                """INSERT INTO audit_sessions (session_uuid, agent_name, source, filename, organization)
-                   VALUES (%s, %s, %s, %s, %s) RETURNING id""",
-                (session_uuid, agent_name, source, filename, organization)
+def save_completed_audit(audit_id: int, transcript: str, pii_summary: str, scores, policy_version: str):
+    """Store the scores and every rule finding for an audit in one transaction."""
+    with _transaction() as cursor:
+        cursor.execute(
+            _sql("""UPDATE audits SET
+                        status = 'completed', progress_message = 'Completed', error = NULL,
+                        transcript = ?, pii_summary = ?,
+                        empathy = ?, professionalism = ?,
+                        compliance_score = ?, protocol_score = ?, soft_skills_score = ?,
+                        overall_score = ?, outcome = ?, summary = ?, suggestions = ?,
+                        policy_version = ?, completed_at = ?
+                    WHERE id = ?"""),
+            (transcript, pii_summary,
+             scores.empathy, scores.professionalism,
+             scores.compliance_score, scores.protocol_score, scores.soft_skills_score,
+             scores.overall_score, scores.outcome, scores.summary, json.dumps(scores.suggestions),
+             policy_version, _now(), audit_id),
+        )
+        for finding in scores.findings:
+            cursor.execute(
+                _sql("INSERT INTO rule_findings (audit_id, rule_id, rule_title, zero_tolerance, "
+                     "verdict, evidence, explanation) VALUES (?, ?, ?, ?, ?, ?, ?)"),
+                (audit_id, finding.rule_id, finding.rule_title, int(finding.zero_tolerance),
+                 finding.verdict, finding.evidence, finding.explanation),
             )
-            return cur.fetchone()["id"]
-        else:
-            cur = conn.execute(
-                """INSERT INTO audit_sessions (session_uuid, agent_name, source, filename, organization)
-                   VALUES (?, ?, ?, ?, ?)""",
-                (session_uuid, agent_name, source, filename, organization)
-            )
-            return cur.lastrowid
 
 
-# ─────────────────────────────────────────────
-# Audit Results CRUD
-# ─────────────────────────────────────────────
-
-def save_audit_rows(rows: list, session_id: int = None):
-    """Bulk-insert audit result dicts into the DB."""
-    if _USE_POSTGRES:
-        sql = """
-            INSERT INTO audit_results
-                (session_id, chunk, empathy, professionalism, compliance, reason,
-                 violations, suggestions, evaluation, agent, masking_score,
-                 masking_analysis, source, transcript, filename, organization)
-            VALUES
-                (%(session_id)s, %(chunk)s, %(empathy)s, %(professionalism)s,
-                 %(compliance)s, %(reason)s, %(violations)s, %(suggestions)s,
-                 %(evaluation)s, %(agent)s, %(masking_score)s,
-                 %(masking_analysis)s, %(source)s, %(transcript)s,
-                 %(filename)s, %(organization)s)
-        """
-        with get_db() as conn:
-            with conn.cursor() as cur:
-                for row in rows:
-                    row.setdefault("session_id", session_id)
-                    cur.execute(sql, row)
-    else:
-        sql = """
-            INSERT INTO audit_results
-                (session_id, chunk, empathy, professionalism, compliance, reason,
-                 violations, suggestions, evaluation, agent, masking_score,
-                 masking_analysis, source, transcript, filename, organization)
-            VALUES
-                (:session_id, :chunk, :empathy, :professionalism, :compliance, :reason,
-                 :violations, :suggestions, :evaluation, :agent, :masking_score,
-                 :masking_analysis, :source, :transcript, :filename, :organization)
-        """
-        with get_db() as conn:
-            for row in rows:
-                row.setdefault("session_id", session_id)
-                conn.execute(sql, row)
-
-    logger.info("Saved %d audit rows to DB (session_id=%s).", len(rows), session_id)
+def fail_stale_audits(older_than_minutes: int = 30):
+    """Audits stuck in 'processing' (e.g. the server restarted mid-audit) are marked failed."""
+    cutoff = (datetime.now(timezone.utc) - timedelta(minutes=older_than_minutes)).isoformat(timespec="seconds")
+    with _transaction() as cursor:
+        cursor.execute(
+            _sql("UPDATE audits SET status = 'failed', error = 'Processing was interrupted. Please upload the call again.' "
+                 "WHERE status = 'processing' AND created_at < ?"),
+            (cutoff,),
+        )
 
 
-def get_audit_dataframe(organization: str = None) -> pd.DataFrame:
-    """
-    Return audit_results as a DataFrame with legacy CSV column name aliases.
-    Works identically on both PostgreSQL and SQLite.
-    """
-    ph = PH
-    sql = """
-        SELECT
-            chunk            AS "Chunk",
-            empathy,
-            professionalism,
-            compliance,
-            reason,
-            violations,
-            suggestions,
-            evaluation,
-            agent            AS "Agent",
-            masking_score,
-            masking_analysis,
-            source           AS "Source",
-            transcript       AS "Transcript",
-            filename         AS "Filename",
-            organization     AS "Organization",
-            created_at
-        FROM audit_results
-    """
-    params = []
-    if organization:
-        sql += f" WHERE organization = {ph}"
-        params.append(organization)
-    sql += " ORDER BY id ASC"
+# ----- Reading audits -----------------------------------------------------
 
-    with get_db() as conn:
-        df = pd.read_sql_query(sql, conn, params=params)
-
-    df["empathy"]         = pd.to_numeric(df["empathy"], errors="coerce")
-    df["professionalism"] = pd.to_numeric(df["professionalism"], errors="coerce")
-    df["masking_score"]   = pd.to_numeric(df["masking_score"], errors="coerce").fillna(100)
-    df["Organization"]    = df["Organization"].fillna("Default")
-    df = df.dropna(subset=["empathy", "professionalism"])
-    return df
+AUDIT_LIST_COLUMNS = """id, agent_name, filename, status, outcome, overall_score,
+                        empathy, professionalism, created_at"""
 
 
-# ─────────────────────────────────────────────
-# Health / Meta
-# ─────────────────────────────────────────────
+def get_audit(audit_id: int) -> dict | None:
+    audit = _fetch_one("SELECT * FROM audits WHERE id = ?", (audit_id,))
+    if audit is None:
+        return None
+    audit["suggestions"] = json.loads(audit["suggestions"] or "[]")
+    audit["findings"] = _fetch_all(
+        "SELECT rule_id, rule_title, zero_tolerance, verdict, evidence, explanation "
+        "FROM rule_findings WHERE audit_id = ? ORDER BY id",
+        (audit_id,),
+    )
+    return audit
 
-def get_db_stats() -> dict:
-    """Return live stats for the /api/db-status endpoint."""
-    with get_db() as conn:
-        total_audits   = _fetchone(conn, "SELECT COUNT(*) AS c FROM audit_results")["c"]
-        total_users    = _fetchone(conn, "SELECT COUNT(*) AS c FROM users")["c"]
-        total_sessions = _fetchone(conn, "SELECT COUNT(*) AS c FROM audit_sessions")["c"]
-        latest_row     = _fetchone(conn, "SELECT MAX(created_at) AS t FROM audit_results")
-        latest         = latest_row["t"] if latest_row else None
 
-    engine = "PostgreSQL (Cloud Run)" if _USE_POSTGRES else "SQLite (local dev)"
-    return {
-        "database": engine,
-        "tables": ["users", "audit_sessions", "audit_results"],
-        "total_audit_rows": total_audits,
-        "total_users": total_users,
-        "total_sessions": total_sessions,
-        "latest_audit": str(latest) if latest else "No audits yet",
-        "status": "healthy",
+def get_audit_status(audit_id: int) -> dict | None:
+    return _fetch_one("SELECT id, status, progress_message, error FROM audits WHERE id = ?", (audit_id,))
+
+
+def list_audits(agent_name: str | None = None, limit: int = 20) -> list[dict]:
+    if agent_name:
+        return _fetch_all(f"SELECT {AUDIT_LIST_COLUMNS} FROM audits WHERE agent_name = ? "
+                          "ORDER BY id DESC LIMIT ?", (agent_name, limit))
+    return _fetch_all(f"SELECT {AUDIT_LIST_COLUMNS} FROM audits ORDER BY id DESC LIMIT ?", (limit,))
+
+
+# ----- Dashboard statistics (completed audits only) -----------------------
+
+AGENT_STATS_COLUMNS = """
+    COUNT(*)                                              AS audit_count,
+    AVG(overall_score)                                    AS avg_overall,
+    AVG(empathy)                                          AS avg_empathy,
+    AVG(professionalism)                                  AS avg_professionalism,
+    100.0 * SUM(CASE WHEN outcome = 'PASS' THEN 1 ELSE 0 END) / COUNT(*) AS pass_rate,
+    SUM(CASE WHEN outcome = 'FAIL' THEN 1 ELSE 0 END)     AS fail_count
+"""
+
+
+def team_summary() -> dict:
+    row = _fetch_one(f"SELECT {AGENT_STATS_COLUMNS}, COUNT(DISTINCT agent_name) AS agent_count "
+                     "FROM audits WHERE status = 'completed'")
+    return row if row and row["audit_count"] else {
+        "audit_count": 0, "agent_count": 0, "avg_overall": None, "avg_empathy": None,
+        "avg_professionalism": None, "pass_rate": None, "fail_count": 0,
     }
+
+
+def agent_leaderboard() -> list[dict]:
+    return _fetch_all(f"SELECT agent_name, {AGENT_STATS_COLUMNS} FROM audits WHERE status = 'completed' "
+                      "GROUP BY agent_name ORDER BY avg_overall DESC")
+
+
+def agent_summary(agent_name: str) -> dict | None:
+    return _fetch_one(f"SELECT agent_name, {AGENT_STATS_COLUMNS} FROM audits "
+                      "WHERE status = 'completed' AND agent_name = ? GROUP BY agent_name", (agent_name,))
+
+
+def top_violations(agent_name: str | None = None, limit: int = 5) -> list[dict]:
+    """Rules broken most often, across the team or for one agent."""
+    agent_filter = "AND a.agent_name = ?" if agent_name else ""
+    params = (agent_name, limit) if agent_name else (limit,)
+    return _fetch_all(
+        f"""SELECT f.rule_id, f.rule_title, MAX(f.zero_tolerance) AS zero_tolerance, COUNT(*) AS count
+            FROM rule_findings f JOIN audits a ON a.id = f.audit_id
+            WHERE f.verdict = 'fail' AND a.status = 'completed' {agent_filter}
+            GROUP BY f.rule_id, f.rule_title
+            ORDER BY count DESC, f.rule_id
+            LIMIT ?""",
+        params,
+    )
+
+
+def recent_suggestions(limit_audits: int = 50) -> list[str]:
+    rows = _fetch_all("SELECT suggestions FROM audits WHERE status = 'completed' "
+                      "ORDER BY id DESC LIMIT ?", (limit_audits,))
+    unique = {}
+    for row in rows:
+        for suggestion in json.loads(row["suggestions"] or "[]"):
+            unique.setdefault(suggestion.lower(), suggestion)
+    return list(unique.values())
+
+
+def export_rows() -> list[dict]:
+    return _fetch_all(
+        """SELECT id, agent_name, filename, outcome, overall_score, compliance_score, protocol_score,
+                  soft_skills_score, empathy, professionalism, summary, pii_summary, created_at
+           FROM audits WHERE status = 'completed' ORDER BY id"""
+    )

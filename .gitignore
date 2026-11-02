@@ -39,6 +39,7 @@ env/
 .env
 .env.local
 .env.*
+!.env.example
 
 # OS generated files
 .DS_Store
@@ -62,6 +63,7 @@ data/uploads/*
 data/user_data/
 data/audit_results.csv
 data/audit_system.db
+data/auditor.db
 data/users.json
 *.db
 *.sqlite

@@ -56,8 +56,11 @@ steps:
       - --min-instances=0
       - --max-instances=10
       - --timeout=300
-      # Inject DATABASE_URL from Secret Manager
-      - --set-secrets=DATABASE_URL=${_DB_SECRET_NAME}:latest
+      # Audio audits run in a background thread after the upload request returns.
+      # Keep CPU allocated outside requests so that thread isn't starved.
+      - --no-cpu-throttling
+      # Inject all secrets from Secret Manager (the app refuses to start without FLASK_SECRET_KEY)
+      - --set-secrets=DATABASE_URL=${_DB_SECRET_NAME}:latest,FLASK_SECRET_KEY=FLASK_SECRET_KEY:latest,ADMIN_USERNAME=ADMIN_USERNAME:latest,ADMIN_PASSWORD=ADMIN_PASSWORD:latest,GROQ_API_KEY=GROQ_API_KEY:latest,PINECONE_API_KEY=PINECONE_API_KEY:latest
       # All other env vars (non-secret) set here or via Cloud Run console
       - --set-env-vars=PYTHONUNBUFFERED=1
 

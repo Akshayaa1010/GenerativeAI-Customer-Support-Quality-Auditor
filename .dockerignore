@@ -30,14 +30,8 @@ frontend/__pycache__/
 # SQLite DB and CSV are NOT used on Cloud Run (PostgreSQL is used instead)
 data/audit_system.db
 data/audit_results.csv
-data/users.json
 data/uploads/
-data/user_data/
-data/extracted_email.json
 
-# ── Migration scripts (not needed in production image) ─────────────────────
-migrate_to_db.py
-inspect_db.py
 
 # ── Logs ───────────────────────────────────────────────────────────────────
 *.log
@@ -45,3 +39,8 @@ inspect_db.py
 # ── OS files ───────────────────────────────────────────────────────────────
 .DS_Store
 Thumbs.db
+
+# New local SQLite database and tests (not needed in the production image)
+data/auditor.db
+tests/
+samples/
