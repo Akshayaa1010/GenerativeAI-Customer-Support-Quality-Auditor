@@ -12,6 +12,10 @@ first page load after a break can take up to a minute.
 **Try it:** the [samples/](samples/) folder has seven recorded test calls,
 each with the outcome it should get (PASS, WARN or FAIL).
 
+**Full documentation:** [docs/Project_Documentation.pdf](docs/Project_Documentation.pdf)
+covers the architecture, RAG, scoring, security, every bug fixed, a build-from-scratch
+guide and deployment.
+
 ## How a call is audited
 
 ```
@@ -75,6 +79,7 @@ frontend/
   static/               app.js, styles.css
 data/policy.txt         the company policy the AI audits against
 samples/                seven test calls (.wav) and their expected outcomes
+docs/                   project documentation (PDF)
 tests/                  unit tests (no network needed)
 Dockerfile              production image (gunicorn)
 render.yaml             Render deployment settings
